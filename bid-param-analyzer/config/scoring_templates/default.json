@@ -1,0 +1,42 @@
+{
+  "default": {
+    "name": "默认评分模板",
+    "description": "通用技术评分模板，适用于标准技术参数评审场景",
+    "rule_type": "quantitative",
+    "conditions": [
+      {
+        "param_name": "",
+        "operator": "GTE",
+        "target_value": "",
+        "score": 0
+      }
+    ]
+  },
+  "performance_scoring": {
+    "name": "性能指标评分模板",
+    "description": "适用于以性能指标为主要评分项的招标场景",
+    "rule_type": "quantitative",
+    "ranking": {
+      "top_score": 5,
+      "description": "性能指标每项最高 5 分，按排名线性差值"
+    }
+  },
+  "functional_checklist": {
+    "name": "功能清单评分模板",
+    "description": "适用于功能需求清单逐项打分的场景",
+    "rule_type": "qualitative",
+    "score_per_item": 1,
+    "description": "每满足一项功能需求得 1 分"
+  },
+  "weighted_composite": {
+    "name": "加权综合评分模板",
+    "description": "按权重对多个评分维度进行综合评分的模板",
+    "rule_type": "quantitative",
+    "dimensions": {
+      "性能指标": 0.40,
+      "安全功能": 0.30,
+      "可靠性": 0.15,
+      "管理能力": 0.15
+    }
+  }
+}

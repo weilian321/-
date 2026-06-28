@@ -1,6 +1,6 @@
 # 需求实施计划
 
-- [ ] 1. 设置项目结构与核心配置
+- [x] 1. 设置项目结构与核心配置
    - 在 `/workspace/bid-param-analyzer/` 创建完整目录结构（config/ parsers/ database/ engine/ reports/ storage/ tests/）
    - 创建 `config/settings.py`，定义全局配置项：OCR 引擎类型、语义匹配相似度阈值(0.85)、文件大小上限(200MB)、页数上限(200页)、临时文件有效期(72h)、数据库路径
    - 创建 `config/product_lines.yaml`，定义至少 2 条产品线及其参数模板（参考 REQ-2, REQ-9.1）
