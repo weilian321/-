@@ -13,14 +13,14 @@
   - [x] 2.3 在 `database/repository.py` 中实现 `create_product_line(name, description)` 和 `get_active_params(product_line_id)`（参考 REQ-2.1, REQ-2.2）
   - [ ]* 2.4 为数据模型编写单元测试 — 验证 ProductLine/ProductVersion/ParameterRecord 的创建、查询、级联关系
 
-- [ ] 3. 实现产品参数基准库 CRUD 与版本管理
-  - [ ] 3.1 在 `database/repository.py` 中实现 `switch_version(product_line_id, version_id)`、`get_version_history(product_line_id)`、`get_version_params(version_id)` — 支持不少于 3 个历史版本切换（参考 REQ-2.2）
-  - [ ] 3.2 实现 `import_from_excel(file_path)` — 解析 Excel 格式参数文件，校验必填字段（参数名称、标称值、单位）与数值类型合法性，批量写入 ParameterRecord（参考 REQ-2.3, 设计文档 Correctness Properties 输入校验规则）
-  - [ ] 3.3 实现 `export_to_excel(version_id, output_path)` — 将指定版本所有参数导出为 Excel 文件，包含所有参数字段与版本信息（参考 REQ-2.4）
-  - [ ] 3.4 实现 `update_parameter(param_id, updates)` 与 `add_alias(param_id, alias)` — 单条参数更新与别名管理（参考 REQ-9.1, 设计文档 semantic_matcher 别名匹配策略）
+- [x] 3. 实现产品参数基准库 CRUD 与版本管理
+  - [x] 3.1 在 `database/repository.py` 中实现 `switch_version(product_line_id, version_id)`、`get_version_history(product_line_id)`、`get_version_params(version_id)` — 支持不少于 3 个历史版本切换（参考 REQ-2.2）
+  - [x] 3.2 实现 `import_from_excel(file_path)` — 解析 Excel 格式参数文件，校验必填字段（参数名称、标称值、单位）与数值类型合法性，批量写入 ParameterRecord（参考 REQ-2.3, 设计文档 Correctness Properties 输入校验规则）
+  - [x] 3.3 实现 `export_to_excel(version_id, output_path)` — 将指定版本所有参数导出为 Excel 文件，包含所有参数字段与版本信息（参考 REQ-2.4）
+  - [x] 3.4 实现 `update_parameter(param_id, updates)` 与 `add_alias(param_id, alias)` — 单条参数更新与别名管理（参考 REQ-9.1, 设计文档 semantic_matcher 别名匹配策略）
 
-- [ ] 4. 检查点 — 参数库模块功能验证
-  - 运行 `python -c "from database.repository import *; import tempfile; ..."` 验证 Excel 导入导出、版本切换、CRUD 操作可正常执行
+- [x] 4. 检查点 — 参数库模块功能验证
+  - 运行验证脚本确认 Excel 导入导出、版本切换、CRUD 操作可正常执行
 
 - [ ] 5. 实现招标文件解析模块
   - [ ] 5.1 在 `parsers/doc_parser.py` 中实现 `parse_pdf(file_path)` — 调用 docparse 解析 PDF 文件，返回全文文本与表格数据数组（参考 REQ-1.1）
