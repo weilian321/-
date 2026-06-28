@@ -1,7 +1,8 @@
 """
-MonkeyCode Skill 交互入口
+MonkeyCode Agent 交互入口
 
-自然语言对话式交互，管理文件上传、进度查询、参数修正、报告下载等操作。
+智能体核心中枢集成：自主任务规划、多工具调度、双层记忆、
+异常主动处理和结果自校验。
 """
 import json
 import os
@@ -9,9 +10,21 @@ from typing import Any
 
 from orchestrator import Orchestrator
 from storage.file_manager import cleanup_expired_files, clear_task_files
+from agent.planner import AgentPlanner
+from agent.scheduler import ToolScheduler
+from agent.memory import MemoryManager
+from agent.exception_handler import ExceptionHandler
+from agent.self_validator import SelfValidator
 
 
 _orchestrator = Orchestrator()
+_planner = AgentPlanner()
+_scheduler = ToolScheduler()
+_memory = MemoryManager()
+_exception_handler = ExceptionHandler()
+_validator = SelfValidator()
+
+_pending_anomaly: dict[str, Any] = {}
 
 
 def handle_message(user_input: str, context: dict[str, Any]) -> dict[str, Any]:
@@ -25,10 +38,20 @@ def handle_message(user_input: str, context: dict[str, Any]) -> dict[str, Any]:
     - "重新计算"/"重算" → 重新触发比对
     - "导出"/"报告"/"下载" → 获取报告下载链接
     - "清除"/"删除" → 清除任务文件
+    - 对异常询问的回复 → 自动识别并传递给异常处理器
     """
     user_lower = user_input.lower().strip()
 
+    task_id = context.get("current_task_id", "")
+
+    if task_id and task_id in _pending_anomaly:
+        return _handle_user_feedback(user_input, context)
+
     if any(k in user_lower for k in ["上传", "分析", "开始分析"]):
+        intent = _planner.parse_intent(user_input, context)
+        plan = _planner.generate_plan(intent, _memory.load_session_context(task_id) if task_id else None)
+        context["_agent_intent"] = intent.intent_type
+        context["_agent_plan"] = [s.name for s in plan.steps]
         return _prompt_upload(context)
 
     if any(k in user_lower for k in ["进度", "状态"]):
@@ -51,7 +74,7 @@ def handle_message(user_input: str, context: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "message": (
-            "您好，我是投标参数智能分析助手。请提供以下信息开始分析：\n"
+            "您好，我是投标参数智能分析智能体。请提供以下信息开始分析：\n"
             "1. 上传招标文件（支持 PDF/Word 格式）\n"
             "2. 选择产品线进行参数比对\n\n"
             "您也可以输入"帮助"查看完整指令列表。"
@@ -60,22 +83,44 @@ def handle_message(user_input: str, context: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _prompt_upload(context: dict) -> dict:
-    return {
-        "message": "请上传招标文件（支持 .pdf、.doc、.docx 格式），文件大小不超过 200MB。您也可以直接告知文件路径。",
-        "components": [],
+def _handle_user_feedback(user_input: str, context: dict) -> dict:
+    """处理用户对异常询问的回复。"""
+    task_id = context.get("current_task_id", "")
+    anomaly_info = _pending_anomaly.pop(task_id, None)
+    if not anomaly_info:
+        return _prompt_upload(context)
+
+    anomaly = anomaly_info.get("anomaly")
+    if anomaly is None:
+        return _prompt_upload(context)
+
+    action = _exception_handler.apply_resolution(anomaly, user_input)
+
+    action_map = {
+        "retry": "正在重试上次失败的步骤...",
+        "skip": "已跳过该步骤，继续执行后续分析。",
+        "abort": "分析已终止。如需重新开始，请上传新的招标文件。",
+        "select_model": "已选择产品型号，继续执行分析。",
+        "continue_with_manual": "已记录您的反馈，将在报告中标记为人工确认项。",
+        "continue": "已收到反馈，继续执行分析。",
     }
+    msg = action_map.get(action["action"], "已收到反馈，继续执行分析。")
+
+    return {"message": msg, "components": [], "task_id": task_id}
 
 
 def handle_file_upload(file_path: str, file_type: str, context: dict) -> dict:
     """
-    处理招标文件上传，校验类型与大小，启动分析任务。
+    处理招标文件上传，校验类型与大小，启动智能体分析任务。
     """
     ext = os.path.splitext(file_path)[1].lower()
     if ext not in (".pdf", ".doc", ".docx"):
         return {"message": f"不支持的文件类型: {ext}，仅支持 PDF/Word 格式", "components": []}
 
     task_id = _orchestrator.create_task(file_path, "")
+    context["current_task_id"] = task_id
+
+    _memory.save_session_context(task_id, {"bid_file_path": file_path})
 
     try:
         result = _orchestrator.execute_step(task_id, "parse")
@@ -85,17 +130,22 @@ def handle_file_upload(file_path: str, file_type: str, context: dict) -> dict:
         rule_count = result.get("scoring_rule_count", 0)
         params = result.get("parsed_params", [])
 
+        _memory.save_session_context(task_id, {
+            "parsed_params": params,
+            "completed_step": "parse",
+        })
+
         param_table = {
             "type": "table",
             "title": f"识别参数列表（共 {param_count} 项）",
             "headers": ["参数名称", "要求值", "单位", "类型", "实质性条款"],
             "rows": [
                 [
-                    p.name,
-                    p.requirement_value,
-                    p.unit,
-                    p.param_type,
-                    "是" if p.is_material else "否",
+                    p.name if hasattr(p, "name") else p.get("name", ""),
+                    p.requirement_value if hasattr(p, "requirement_value") else p.get("requirement_value", ""),
+                    p.unit if hasattr(p, "unit") else p.get("unit", ""),
+                    p.param_type if hasattr(p, "param_type") else p.get("param_type", ""),
+                    "是" if (p.is_material if hasattr(p, "is_material") else p.get("is_material", False)) else "否",
                 ]
                 for p in params[:20]
             ],
@@ -106,9 +156,11 @@ def handle_file_upload(file_path: str, file_type: str, context: dict) -> dict:
         if param_count > 20:
             components.append({"type": "text", "content": f"... 共 {param_count} 项参数，仅展示前 20 项"})
 
+        intent_type = context.get("_agent_intent", "full_pipeline")
+
         return {
             "message": (
-                f"招标文件解析完成：\n"
+                f"招标文件解析完成（智能体模式: {intent_type}）：\n"
                 f"- 提取技术参数 {param_count} 项\n"
                 f"- 识别评分规则 {rule_count} 项\n\n"
                 f"请确认参数是否准确，如需修正请告知。确认后请选择产品线以继续比对。"
@@ -117,6 +169,18 @@ def handle_file_upload(file_path: str, file_type: str, context: dict) -> dict:
             "task_id": task_id,
         }
     except Exception as e:
+        anomaly = _exception_handler.detect_anomaly(
+            {"name": "parse", "tool_name": "doc_parser"},
+            {"success": False, "error": str(e)},
+        )
+        if anomaly.severity == "error":
+            _pending_anomaly[task_id] = {"anomaly": anomaly}
+            query = _exception_handler.formulate_query(anomaly)
+            return {
+                "message": query["message"],
+                "components": [{"type": "text", "content": " | ".join(query["options"])}],
+                "task_id": task_id,
+            }
         return {"message": f"解析失败: {e}", "components": []}
 
 
@@ -165,6 +229,15 @@ def _recalculate(context: dict) -> dict:
 
     try:
         result = _orchestrator.recalculate(task_id)
+
+        _memory.update_memory_on_correction(
+            task_id, "_recalculate", "_prev", "_new"
+        )
+
+        validation = _validator.generate_validation_report(task_id)
+        if not validation["complete"]:
+            context["_validation"] = validation
+
         return _format_analysis_result(result)
     except Exception as e:
         return {"message": f"重新计算失败: {e}", "components": []}
@@ -228,8 +301,9 @@ def _format_analysis_result(result: dict) -> dict:
 def _show_help() -> dict:
     return {
         "message": (
-            "**投标参数智能分析助手** 支持以下操作：\n\n"
+            "**投标参数智能分析智能体** 支持以下操作：\n\n"
             "- 上传招标文件（输入"分析"或直接发送文件）\n"
+            "- 自定义分析范围（如"只分析资格门槛项"）\n"
             "- 查询进度（输入"进度"）\n"
             "- 修正参数（输入"修正"）\n"
             "- 重新计算（输入"重新计算"）\n"

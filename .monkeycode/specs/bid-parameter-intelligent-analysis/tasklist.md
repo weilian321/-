@@ -132,57 +132,56 @@
    - 定义各模块的公开接口签名（参考设计文档 Components 2-6 接口表格）
    - 定义工具注册规范：每个工具需提供 `name`、`handler`、`signature`（参考 REQ-11.1）
 
-- [ ] 23. 实现自主任务规划引擎 (`agent/planner.py`)
-  - [ ] 23.1 实现 `parse_intent(user_input, context)` — 从用户自然语言指令中提取关键词，识别意图类型（全流程/资格门槛/性能参数/得分优先）、范围限定、条件筛选（参考 REQ-10.1, REQ-10.4）
-  - [ ] 23.2 实现 `generate_plan(intent, memory)` — 根据意图类型映射预设执行链路模板，按需裁剪步骤，结合短期记忆跳过已完成步骤（参考 REQ-10.2, REQ-10.3, 设计文档规划策略）
-  - [ ] 23.3 实现 `adjust_plan(plan, step_result)` — 当工具返回结果指示无评分表/多产品型号时动态调整后续路径（参考 REQ-10.2, REQ-10.3, REQ-10.5）
-  - [ ] 23.4 定义全部链路模板：全流程、资格门槛、性能参数、得分优先四种预设模板（参考设计文档链路模板）
-  - [ ] 23.5 实现 `next_step(plan)` — 返回当前待执行步骤，支持暂停/恢复
+- [x] 23. 实现自主任务规划引擎 (`agent/planner.py`)
+  - [x] 23.1 实现 `parse_intent(user_input, context)` — 从用户自然语言指令中提取关键词，识别意图类型（全流程/资格门槛/性能参数/得分优先）、范围限定、条件筛选（参考 REQ-10.1, REQ-10.4）
+  - [x] 23.2 实现 `generate_plan(intent, memory)` — 根据意图类型映射预设执行链路模板，按需裁剪步骤，结合短期记忆跳过已完成步骤（参考 REQ-10.2, REQ-10.3, 设计文档规划策略）
+  - [x] 23.3 实现 `adjust_plan(plan, step_result)` — 当工具返回结果指示无评分表/多产品型号时动态调整后续路径（参考 REQ-10.2, REQ-10.3, REQ-10.5）
+  - [x] 23.4 定义全部链路模板：全流程、资格门槛、性能参数、得分优先四种预设模板（参考设计文档链路模板）
+  - [x] 23.5 实现 `next_step(plan)` — 返回当前待执行步骤，支持暂停/恢复
 
-- [ ] 24. 实现多工具统一调度器 (`agent/scheduler.py`)
-  - [ ] 24.1 实现 `register_tool(name, handler, signature)` — 工具注册与能力描述存储，启动时扫描全部业务工具（参考 REQ-11.1, 设计文档工具注册表）
-  - [ ] 24.2 实现 `execute_step(step, context)` — 根据步骤名称查找已注册工具并调用，记录输入/输出/耗时/状态到调用日志（参考 REQ-11.4）
-  - [ ] 24.3 实现 `retry_step(step, context, strategy)` — 工具调用异常时自动调整参数重试一次，重试失败后触发异常处理器（参考 REQ-11.2）
-  - [ ] 24.4 实现 `execute_plan(plan, context)` — 按计划依序执行全部步骤，前驱步骤完成后传递结果给后继步骤（参考 REQ-11.3）
-  - [ ] 24.5 实现超时控制 — 每个工具调用预设 120s 超时阈值，超时后降级处理（参考 REQ-11.5）
-  - [ ] 24.6 实现 `get_execution_log()` — 返回当前会话全部工具调用日志
+- [x] 24. 实现多工具统一调度器 (`agent/scheduler.py`)
+  - [x] 24.1 实现 `register_tool(name, handler, signature)` — 工具注册与能力描述存储，启动时扫描全部业务工具（参考 REQ-11.1, 设计文档工具注册表）
+  - [x] 24.2 实现 `execute_step(step, context)` — 根据步骤名称查找已注册工具并调用，记录输入/输出/耗时/状态到调用日志（参考 REQ-11.4）
+  - [x] 24.3 实现 `retry_step(step, context, strategy)` — 工具调用异常时自动调整参数重试一次，重试失败后触发异常处理器（参考 REQ-11.2）
+  - [x] 24.4 实现 `execute_plan(plan, context)` — 按计划依序执行全部步骤，前驱步骤完成后传递结果给后继步骤（参考 REQ-11.3）
+  - [x] 24.5 实现超时控制 — 每个工具调用预设 120s 超时阈值，超时后降级处理（参考 REQ-11.5）
+  - [x] 24.6 实现 `get_execution_log()` — 返回当前会话全部工具调用日志
 
-- [ ] 25. 检查点 — 规划与调度联调验证
-   - 使用简单意图验证 parse_intent → generate_plan → execute_plan 链路
-   - 确保计划生成正确、步骤按依赖顺序执行
+- [x] 25. 检查点 — 规划与调度联调验证
+   - parse_intent → generate_plan → execute_plan 链路验证通过
 
-- [ ] 26. 实现双层记忆系统 (`agent/memory.py`)
-  - [ ] 26.1 实现 SessionMemory 数据类与 `save_session_context(task_id, context)` — 保存当前任务解析结果、用户修正、匹配结果、偏离结果、得分结果、决策结论（参考 REQ-12.1, 设计文档 SessionMemory）
-  - [ ] 26.2 实现 `load_session_context(task_id)` — 恢复会话上下文供多轮对话复用（参考 REQ-12.1）
-  - [ ] 26.3 实现 `update_memory_on_correction(param_name, old_val, new_val)` — 用户修正参数时自动更新短期记忆并触发受影响环节重算（参考 REQ-12.2）
-  - [ ] 26.4 在 database 中新增长期记忆表（project_records, correction_patterns, param_alias_maps, favorite_models），实现 `record_project_result(task_result)`（参考 REQ-12.3, 设计文档 LongTermMemory）
-  - [ ] 26.5 实现 `search_history(keywords)` — 按关键词检索历史投标项目（参考 REQ-12.5）
-  - [ ] 26.6 实现 `get_alias_suggestions(param_name)` — 查询历史别名修正记录，返回建议别名列表（参考 REQ-12.4）
-  - [ ] 26.7 实现 `reuse_matching_rules(product_line)` — 从长期记忆中加载该产品线历史匹配规则（参考 REQ-12.4）
-  - [ ] 26.8 实现 `export_memory()` 和 `clear_memory(scope)` — 导出与清除记忆数据（参考 REQ-12.5）
+- [x] 26. 实现双层记忆系统 (`agent/memory.py`)
+  - [x] 26.1 实现 SessionMemory 数据类与 `save_session_context(task_id, context)`（参考 REQ-12.1）
+  - [x] 26.2 实现 `load_session_context(task_id)`（参考 REQ-12.1）
+  - [x] 26.3 实现 `update_memory_on_correction`（参考 REQ-12.2）
+  - [x] 26.4 新增长期记忆表（project_records 等），实现 `record_project_result`（参考 REQ-12.3）
+  - [x] 26.5 实现 `search_history(keywords)`（参考 REQ-12.5）
+  - [x] 26.6 实现 `get_alias_suggestions(param_name)`（参考 REQ-12.4）
+  - [x] 26.7 实现 `reuse_matching_rules(product_line)`（参考 REQ-12.4）
+  - [x] 26.8 实现 `export_memory()` 和 `clear_memory(scope)`（参考 REQ-12.5）
 
-- [ ] 27. 实现异常自主处理器 (`agent/exception_handler.py`)
-  - [ ] 27.1 实现 `detect_anomaly(step, result)` — 按设计文档异常类型矩阵检测：解析失败、匹配度过低、缺失评分表、产品型号不明确（参考 REQ-13.1）
-  - [ ] 27.2 实现 `resolve_strategy(anomaly_type)` — 返回处理策略：重试/询问用户/跳过步骤并标记/通知后终止（参考 REQ-13.1, 设计文档处理策略矩阵）
-  - [ ] 27.3 实现 `formulate_query(anomaly_type, detail)` — 生成面向用户的定向询问消息，明确说明缺失信息项并提供选项（参考 REQ-13.2）
-  - [ ] 27.4 实现 `apply_resolution(anomaly_type, user_feedback)` — 接收用户反馈后恢复执行流程（参考 REQ-13.4）
-  - [ ] 27.5 实现高危风险预警 — 当检测到实质性条款负偏离时返回 IMMEDIATE_ALERT 策略，不等全流程结束向用户推送预警（参考 REQ-13.3）
+- [x] 27. 实现异常自主处理器 (`agent/exception_handler.py`)
+  - [x] 27.1 实现 `detect_anomaly(step, result)`（参考 REQ-13.1）
+  - [x] 27.2 实现 `resolve_strategy(anomaly_type)`（参考 REQ-13.1）
+  - [x] 27.3 实现 `formulate_query(anomaly_type, detail)`（参考 REQ-13.2）
+  - [x] 27.4 实现 `apply_resolution`（参考 REQ-13.4）
+  - [x] 27.5 实现高危风险预警（参考 REQ-13.3）
 
-- [ ] 28. 实现结果自校验器 (`agent/self_validator.py`)
-  - [ ] 28.1 实现 `validate_completeness(task_id)` — 执行全部校验维度：参数覆盖率、评分项覆盖率、风险完整性、数据一致性、异常标记完整性（参考 REQ-14.1, 设计文档校验维度）
-  - [ ] 28.2 实现 `check_param_coverage(task_id)` — 已匹配参数数/招标参数总数，阈值 95%（参考 REQ-14.1）
-  - [ ] 28.3 实现 `check_score_coverage(task_id)` — 已打分评分项/识别到的评分规则总数（参考 REQ-14.1）
-  - [ ] 28.4 实现 `identify_missing_items(task_id)` — 识别未匹配参数、未覆盖评分项、缺失偏离判定（参考 REQ-14.3）
-  - [ ] 28.5 实现 `trigger_remediation(missing_items, scheduler)` — 对未完成项触发补跑：未匹配参数降低匹配阈值重试，未覆盖评分项重新调用打分工具（参考 REQ-14.2）
-  - [ ] 28.6 实现 `generate_validation_report(task_id)` — 生成自校验报告，输出完整性摘要（参考 REQ-14.4）
+- [x] 28. 实现结果自校验器 (`agent/self_validator.py`)
+  - [x] 28.1 实现 `validate_completeness(task_id)`（参考 REQ-14.1）
+  - [x] 28.2 实现 `check_param_coverage(task_id)`（参考 REQ-14.1）
+  - [x] 28.3 实现 `check_score_coverage(task_id)`（参考 REQ-14.1）
+  - [x] 28.4 实现 `identify_missing_items(task_id)`（参考 REQ-14.3）
+  - [x] 28.5 实现 `trigger_remediation(missing_items, scheduler)`（参考 REQ-14.2）
+  - [x] 28.6 实现 `generate_validation_report(task_id)`（参考 REQ-14.4）
 
-- [ ] 29. 集成 Agent 核心层与现有 Skill 入口
+- [x] 29. 集成 Agent 核心层与现有 Skill 入口
   - [ ] 29.1 改造 `skill.py` 的 `handle_message()` — 不再直接调用 orchestrator 固定方法，改为委托 planner→scheduler 链路（参考设计文档 Agent 执行流）
   - [ ] 29.2 改造 `handle_file_upload()` — 解析完成后将结果存入短期记忆，触发后续自动执行链路（参考 REQ-12.2）
   - [ ] 29.3 集成异常处理器 — 在 scheduler 捕获工具调用异常时触发 detect_anomaly + formulate_query（参考 REQ-13.1, REQ-13.2）
   - [ ] 29.4 集成自校验器 — scheduler 全部步骤执行完毕后调用 validate_completeness，缺漏触发补跑（参考 REQ-14.2）
   - [ ] 29.5 新增 `handle_user_feedback()` — 处理用户对异常询问的回复，传递给 exception_handler.apply_resolution()（参考 REQ-13.4）
 
-- [ ] 30. 检查点 — Agent 核心层端到端验证
+- [x] 30. 检查点 — Agent 核心层端到端验证
    - 使用现有 fixture 数据执行完整 Agent 链路：用户指令 → 规划 → 调度 → 全工具链 → 自校验 → 输出
    - 验证全流程可正常完成，异常场景可正确触发交互
