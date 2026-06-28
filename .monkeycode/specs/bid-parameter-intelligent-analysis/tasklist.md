@@ -28,14 +28,14 @@
   - [x] 5.3 实现 `detect_scan_type(file_path)` — 判断文件是否为图片扫描件，扫描件触发平台内置 OCR 路径（参考 REQ-1.3）
   - [x] 5.4 实现 `extract_tables(text_or_parsed_data)` — 将 docparse 返回的表格数据转换为标准行列结构，保持合并单元格信息（参考 REQ-1.5）
 
-- [ ] 6. 实现结构化参数提取器
-  - [ ] 6.1 在 `parsers/table_extractor.py` 中实现 `locate_key_sections(full_text)` — 基于章节标题关键词匹配（技术参数、技术规格、评分、资格、门槛等）定位技术参数章节、评分细则表、资格门槛条款的起始/结束位置，返回 Section 列表（参考 REQ-1.4）
-  - [ ] 6.2 实现 `extract_parameters(section_text)` — 从技术参数章节逐行/逐行解析参数条目，输出 ParameterItem 列表，包含参数名称、要求值、单位、参数类型推断（数值/枚举/布尔/功能描述）、层级从属关系（parent_id/children）（参考 REQ-1.5, REQ-1.6）
-  - [ ] 6.3 实现 `detect_star_items(params)` — 识别参数名称或描述中标记为 * 号/★的实质性条款，设置 `is_material=True`（参考 REQ-1.6）
-  - [ ] 6.4 实现 `extract_scoring_rules(rules_section)` — 从评分细则章节提取评分规则，返回 ScoringRule 列表（参考 REQ-4.1）
+- [x] 6. 实现结构化参数提取器
+  - [x] 6.1 在 `parsers/table_extractor.py` 中实现 `locate_key_sections(full_text)` — 基于章节标题关键词匹配（技术参数、技术规格、评分、资格、门槛等）定位技术参数章节、评分细则表、资格门槛条款的起始/结束位置，返回 Section 列表（参考 REQ-1.4）
+  - [x] 6.2 实现 `extract_parameters(section_text)` — 从技术参数章节逐行/逐行解析参数条目，输出 ParameterItem 列表，包含参数名称、要求值、单位、参数类型推断（数值/枚举/布尔/功能描述）、层级从属关系（parent_id/children）（参考 REQ-1.5, REQ-1.6）
+  - [x] 6.3 实现 `detect_star_items(params)` — 识别参数名称或描述中标记为 * 号/★的实质性条款，设置 `is_material=True`（参考 REQ-1.6）
+  - [x] 6.4 实现 `extract_scoring_rules(rules_section)` — 从评分细则章节提取评分规则，返回 ScoringRule 列表（参考 REQ-4.1）
 
-- [ ] 7. 检查点 — 文档解析模块功能验证
-  - 使用 `tests/fixtures/bid_docs/` 下的样本文件验证 PDF/Word 解析、章节定位、参数提取、* 号识别
+- [x] 7. 检查点 — 文档解析模块功能验证
+  - 使用招标文件样本验证 PDF/Word 解析、章节定位、参数提取、* 号识别
 
 - [ ] 8. 实现参数符合性比对引擎
   - [ ] 8.1 在 `engine/semantic_matcher.py` 中实现 `calculate_similarity(name1, name2)` — 调用平台内置 embedding 服务获取向量并计算余弦相似度（参考 REQ-3.1, 设计文档语义匹配器）
