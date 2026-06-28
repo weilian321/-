@@ -45,15 +45,15 @@
   - [x] 8.5 实现 `classify_risk(deviation_result)` — 风险分级：实质性条款负偏离/无法确认标记为废标级风险；普通参数负偏离标记为得分扣分项（参考 REQ-3.4, REQ-3.5）
   - [x] 8.6 在 `reports/deviation_table.py` 中实现 `generate_deviation_table(task_id, output_format)` — 输出标准格式参数偏离表（招标要求、投标响应、偏离说明、备注），支持 Word 格式（参考 REQ-3.6, REQ-5.4）
 
-- [ ] 9. 实现技术得分估算模块
-  - [ ] 9.1 在 `parsers/scoring_rule_parser.py` 中实现评分规则解析 — 将 `extract_scoring_rules` 的原始输出转换为 ScoringRule 结构化对象，区分 QUANTITATIVE/QUALITATIVE 两种规则类型，解析 Condition 列表（参考 REQ-4.1, 设计文档评分规则模型）
-  - [ ] 9.2 在 `engine/score_calculator.py` 中实现 `calculate_item_score(rule, deviation)` — 按评分规则类型（定量/定性）与条件操作符（EQ/GT/LT/GTE/LTE/CONTAINS）计算单项得分（参考 REQ-4.2, 设计文档得分计算器）
-  - [ ] 9.3 实现 `calculate_scoring(scoring_rules, deviation_table)` — 遍历所有评分规则，逐项映射评分项与产品参数偏差结果，计算所有得分（参考 REQ-4.2）
-  - [ ] 9.4 实现 `aggregate_scores(item_scores)` — 汇总技术部分预估总分与得分率，输出总分、满分、得分率（参考 REQ-4.3）
-  - [ ] 9.5 实现 `trace_score(score_id)` — 返回得分关联的参数依据、评分标准原文、产品参数来源，构建追溯链路（参考 REQ-4.4）
-  - [ ] 9.6 实现 `mark_improvement_items(scores, deviation_table)` — 标记可通过补充材料或参数优化提升得分的高价值评分项（参考 REQ-4.5）
+- [x] 9. 实现技术得分估算模块
+  - [x] 9.1 在 `parsers/scoring_rule_parser.py` 中实现评分规则解析 — 将 `extract_scoring_rules` 的原始输出转换为 ScoringRule 结构化对象，区分 QUANTITATIVE/QUALITATIVE 两种规则类型，解析 Condition 列表（参考 REQ-4.1, 设计文档评分规则模型）
+  - [x] 9.2 在 `engine/score_calculator.py` 中实现 `calculate_item_score(rule, deviation)` — 按评分规则类型（定量/定性）与条件操作符（EQ/GT/LT/GTE/LTE/CONTAINS）计算单项得分（参考 REQ-4.2, 设计文档得分计算器）
+  - [x] 9.3 实现 `calculate_scoring(scoring_rules, deviation_table)` — 遍历所有评分规则，逐项映射评分项与产品参数偏差结果，计算所有得分（参考 REQ-4.2）
+  - [x] 9.4 实现 `aggregate_scores(item_scores)` — 汇总技术部分预估总分与得分率，输出总分、满分、得分率（参考 REQ-4.3）
+  - [x] 9.5 实现 `trace_score(score_id)` — 返回得分关联的参数依据、评分标准原文、产品参数来源，构建追溯链路（参考 REQ-4.4）
+  - [x] 9.6 实现 `mark_improvement_items(scores, deviation_table)` — 标记可通过补充材料或参数优化提升得分的高价值评分项（参考 REQ-4.5）
 
-- [ ] 10. 检查点 — 比对与得分引擎功能验证
+- [x] 10. 检查点 — 比对与得分引擎功能验证
   - 使用 fixture 数据验证语义匹配准确率、偏离判定逻辑、得分计算汇总与溯源链路
 
 - [ ] 11. 实现投标决策推理引擎
