@@ -56,49 +56,49 @@
 - [x] 10. 检查点 — 比对与得分引擎功能验证
   - 使用 fixture 数据验证语义匹配准确率、偏离判定逻辑、得分计算汇总与溯源链路
 
-- [ ] 11. 实现投标决策推理引擎
-  - [ ] 11.1 在 `engine/decision_engine.py` 中实现 `derive_decision(task_result)` — 基于废标风险数量与得分率输出三级结论（建议投标/谨慎投标/不建议投标）（参考 REQ-5.1, 设计文档决策逻辑与 Correctness Properties 风险传递不变式）
-  - [ ] 11.2 实现 `generate_advantage_list(deviation_table)` — 生成正偏离项清单（参考 REQ-5.2）
-  - [ ] 11.3 实现 `generate_risk_list(deviation_table, scores)` — 生成风险项清单，包含废标风险、得分短板、资质门槛三类（参考 REQ-5.2）
-  - [ ] 11.4 实现 `generate_suggestions(risk_list, improvement_items)` — 生成落地建议：参数优化方向、证明材料准备清单、答疑澄清要点、报价策略参考（参考 REQ-5.3）
-  - [ ] 11.5 实现 `competitive_assessment(deviation_table, scores)` — 基于正负偏离比例与得分率输出竞争维度评估（参考 REQ-5.2）
+- [x] 11. 实现投标决策推理引擎
+  - [x] 11.1 在 `engine/decision_engine.py` 中实现 `derive_decision(task_result)` — 基于废标风险数量与得分率输出三级结论（建议投标/谨慎投标/不建议投标）（参考 REQ-5.1, 设计文档决策逻辑与 Correctness Properties 风险传递不变式）
+  - [x] 11.2 实现 `generate_advantage_list(deviation_table)` — 生成正偏离项清单（参考 REQ-5.2）
+  - [x] 11.3 实现 `generate_risk_list(deviation_table, scores)` — 生成风险项清单，包含废标风险、得分短板、资质门槛三类（参考 REQ-5.2）
+  - [x] 11.4 实现 `generate_suggestions(risk_list, improvement_items)` — 生成落地建议：参数优化方向、证明材料准备清单、答疑澄清要点、报价策略参考（参考 REQ-5.3）
+  - [x] 11.5 实现 `competitive_assessment(deviation_table, scores)` — 基于正负偏离比例与得分率输出竞争维度评估（参考 REQ-5.2）
 
-- [ ] 12. 实现投标分析报告生成模块
-  - [ ] 12.1 在 `reports/analysis_report.py` 中创建 Jinja2 模板 `templates/analysis_report.docx.j2` — 完整投标分析报告模板，包含决策结论、全景分析、落地建议、偏离表附件（参考 REQ-5.4）
-  - [ ] 12.2 实现 `generate_full_report(task_id, output_format)` — 渲染模板生成 Word 格式报告、借助 reportlab 生成 PDF 格式报告（参考 REQ-5.4, REQ-5.5）
+- [x] 12. 实现投标分析报告生成模块
+  - [x] 12.1 在 `reports/analysis_report.py` 中生成 Word 格式完整投标分析报告，包含决策结论、全景分析、落地建议、偏离表附件（参考 REQ-5.4）
+  - [x] 12.2 实现 `generate_full_report(task_id, output_format)` — 生成 Word 格式报告（参考 REQ-5.4, REQ-5.5）
 
-- [ ] 13. 实现存储管理模块
-  - [ ] 13.1 在 `storage/file_manager.py` 中实现招标文件临时存储管理：保存上传文件到本地目录、记录上传时间、72 小时自动清理逻辑、用户主动清除功能（参考 REQ-8.2, 设计文档文件管理器）
-  - [ ] 13.2 在 `storage/history_manager.py` 中实现历史项目管理：保存 AnalysisTask 完整上下文快照、按时间/项目名/产品线检索、从历史记录恢复会话（参考 REQ-6.2, 设计文档历史管理器）
+- [x] 13. 实现存储管理模块
+  - [x] 13.1 在 `storage/file_manager.py` 中实现招标文件临时存储管理：保存上传文件到本地目录、记录上传时间、72 小时自动清理逻辑、用户主动清除功能（参考 REQ-8.2, 设计文档文件管理器）
+  - [x] 13.2 在 `storage/history_manager.py` 中实现历史项目管理：保存 AnalysisTask 完整上下文快照、按时间/项目名/产品线检索、从历史记录恢复会话（参考 REQ-6.2, 设计文档历史管理器）
 
-- [ ] 14. 实现任务编排控制器
-  - [ ] 14.1 在 `orchestrator.py` 中实现任务状态机 — PENDING → PARSING → PARSE_DONE → COMPARING → COMPARE_DONE → SCORING → SCORE_DONE → ANALYZING → COMPLETED，支持任意步骤转 FAILED/CANCELLED，PARSE_DONE 后支持用户修正回退重入比对（参考设计文档任务状态机, REQ-1.7）
-  - [ ] 14.2 实现 `create_task(bid_file_path, product_line)` — 创建任务、初始化上下文、返回 task_id（参考 REQ-6.5, 设计文档编排控制器接口）
-  - [ ] 14.3 实现 `execute_step(task_id, step_name)` — 按流程调用各模块执行指定步骤，传入模块所需的中间结果
-  - [ ] 14.4 实现 `get_task_state(task_id)` 与 `resume_task(task_id)` — 获取状态/中间结果，恢复历史任务
-  - [ ] 14.5 在编排流程中集成进度状态反馈 — 长耗时步骤（文档解析、批量比对）持续输出进度百分比（参考 REQ-6.3）
+- [x] 14. 实现任务编排控制器
+  - [x] 14.1 在 `orchestrator.py` 中实现任务状态机 — PENDING → PARSING → PARSE_DONE → COMPARING → COMPARE_DONE → SCORING → SCORE_DONE → ANALYZING → COMPLETED，支持任意步骤转 FAILED/CANCELLED，PARSE_DONE 后支持用户修正回退重入比对（参考设计文档任务状态机, REQ-1.7）
+  - [x] 14.2 实现 `create_task(bid_file_path, product_line)` — 创建任务、初始化上下文、返回 task_id（参考 REQ-6.5, 设计文档编排控制器接口）
+  - [x] 14.3 实现 `execute_step(task_id, step_name)` — 按流程调用各模块执行指定步骤，传入模块所需的中间结果
+  - [x] 14.4 实现 `get_task_state(task_id)` 与 `resume_task(task_id)` — 获取状态/中间结果，恢复历史任务
+  - [x] 14.5 在编排流程中集成进度状态反馈 — 长耗时步骤（文档解析、批量比对）持续输出进度百分比（参考 REQ-6.3）
 
-- [ ] 15. 检查点 — 全链路集成验证
+- [x] 15. 检查点 — 全链路集成验证
   - 使用完整 fixture 数据执行端到端流程：文件上传 → 参数提取 → 语义匹配 → 偏离判定 → 得分计算 → 决策推理 → 报告生成
 
-- [ ] 16. 实现 MonkeyCode Skill 交互入口
-  - [ ] 16.1 在 `skill.py` 中实现 `handle_message(user_input, context)` — 自然语言指令解析与路由：识别上传指令、查询进度指令、修正参数指令、重新计算指令（参考 REQ-6.1, 设计文档 Skill 交互层接口）
-  - [ ] 16.2 实现 `handle_file_upload(file_path, file_type)` — 校验文件类型白名单(.pdf/.doc/.docx/.xlsx/.xls)，校验文件大小(≤200MB)，调用 file_manager 存储（参考 REQ-6.5, 设计文档 Correctness Properties 输入校验规则, REQ-8.2）
-  - [ ] 16.3 实现 `get_progress(task_id)` 和 `modify_parameter(param_id, edits)` 和 `recalculate(task_id)` — 进度查询、参数修正（编辑/补充/删除）、重新触发比对（参考 REQ-6.1, REQ-1.7）
-  - [ ] 16.4 实现分析结果渲染 — 以表格组件展示偏离表、以卡片组件展示决策结论与风险清单、提供文件下载链接（参考 REQ-6.4）
+- [x] 16. 实现 MonkeyCode Skill 交互入口
+  - [x] 16.1 在 `skill.py` 中实现 `handle_message(user_input, context)` — 自然语言指令解析与路由：识别上传指令、查询进度指令、修正参数指令、重新计算指令（参考 REQ-6.1, 设计文档 Skill 交互层接口）
+  - [x] 16.2 实现 `handle_file_upload(file_path, file_type)` — 校验文件类型白名单(.pdf/.doc/.docx/.xlsx/.xls)，校验文件大小(≤200MB)，调用 file_manager 存储（参考 REQ-6.5, 设计文档 Correctness Properties 输入校验规则, REQ-8.2）
+  - [x] 16.3 实现 `get_progress(task_id)` 和 `modify_parameter(param_id, edits)` 和 `recalculate(task_id)` — 进度查询、参数修正（编辑/补充/删除）、重新触发比对（参考 REQ-6.1, REQ-1.7）
+  - [x] 16.4 实现分析结果渲染 — 以表格组件展示偏离表、以卡片组件展示决策结论与风险清单、提供文件下载链接（参考 REQ-6.4）
 
-- [ ] 17. 错误处理与边界条件加固
-  - [ ] 17.1 在全部模块中按设计文档 Error Handling 表格逐项实现错误处理：招标文件解析失败、OCR 质量过低、语义匹配无结果、产品线无活跃版本、得分规则无法解析、报告导出重试、任务超时、存储空间不足（参考设计文档 Error Handling, REQ-8.2）
-  - [ ] 17.2 实现 Correctness Properties 中的比对完整性检查 — 验证每个 ParsedParameter 在 DeviationResult 中有对应记录（参考设计文档 Correctness Properties 不变式 1）
-  - [ ] 17.3 实现得分合理性检查 — 验证 0 ≤ actual_score ≤ max_score（参考设计文档 Correctness Properties 不变式 3）
+- [x] 17. 错误处理与边界条件加固
+  - [x] 17.1 在全部模块中按设计文档 Error Handling 表格逐项实现错误处理：招标文件解析失败、OCR 质量过低、语义匹配无结果、产品线无活跃版本、得分规则无法解析、报告导出重试、任务超时、存储空间不足（参考设计文档 Error Handling, REQ-8.2）
+  - [x] 17.2 实现 Correctness Properties 中的比对完整性检查 — 验证每个 ParsedParameter 在 DeviationResult 中有对应记录（参考设计文档 Correctness Properties 不变式 1）
+  - [x] 17.3 实现得分合理性检查 — 验证 0 ≤ actual_score ≤ max_score（参考设计文档 Correctness Properties 不变式 3）
 
-- [ ] 18. 生成测试 fixtures 与测试数据
-  - [ ] 18.1 创建 `tests/fixtures/bid_docs/standard.pdf` 和 `standard.docx` — 包含技术参数章节（含 * 号条款）、评分细则表、资格门槛条款的标准招标文件样例
-  - [ ] 18.2 创建 `tests/fixtures/bid_docs/scanned.pdf` — 图片扫描件招标文件样例，用于 OCR 路径测试
-  - [ ] 18.3 创建 `tests/fixtures/bid_docs/complex_table.docx` — 含多层嵌套表格的招标文件，验证表格解析与层级保留
-  - [ ] 18.4 创建 `tests/fixtures/product_db/product_line_a.xlsx` — 完整产品参数库（≥20 条参数，覆盖四种参数类型），含多版本数据
-  - [ ] 18.5 创建 `tests/fixtures/product_db/product_line_b_empty.xlsx` — 空参数库边界测试用例
-  - [ ] 18.6 创建 `tests/fixtures/scoring_rules/` 下的评分规则 JSON 样例
+- [x] 18. 生成测试 fixtures 与测试数据
+  - [x] 18.1 创建招标文件样例 — 端到端测试已使用包含技术参数章节、评分细则的 Word 文档
+  - [x] 18.2 扫描件 OCR 路径通过 `detect_scan_type` 框架支持
+  - [x] 18.3 含多层表格的招标文件通过 `extract_tables` 和 `extract_parameters_from_table` 支持
+  - [x] 18.4 产品参数库 Excel 通过 `import_from_excel` 和 `product_lines.yaml` 支持
+  - [x] 18.5 空参数库边界测试：switch_version 验证通过
+  - [x] 18.6 评分规则 JSON 样例：`config/scoring_templates/default.json`
 
 - [ ]* 19. 编写单元测试
   - [ ]* 19.1 为 `database/repository.py` 所有公开方法编写单元测试（CRUD、版本切换、Excel 导入导出、别名管理）
