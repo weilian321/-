@@ -37,13 +37,13 @@
 - [x] 7. 检查点 — 文档解析模块功能验证
   - 使用招标文件样本验证 PDF/Word 解析、章节定位、参数提取、* 号识别
 
-- [ ] 8. 实现参数符合性比对引擎
-  - [ ] 8.1 在 `engine/semantic_matcher.py` 中实现 `calculate_similarity(name1, name2)` — 调用平台内置 embedding 服务获取向量并计算余弦相似度（参考 REQ-3.1, 设计文档语义匹配器）
-  - [ ] 8.2 实现 `match_parameters(bid_params, product_params)` — 执行四级匹配策略（精确匹配、别名匹配、向量匹配≥0.85、人工兜底），返回匹配对列表和未匹配项清单（参考 REQ-3.1, 设计文档语义匹配器匹配策略）
-  - [ ] 8.3 在 `engine/deviation_judge.py` 中实现 `judge(bid_param, product_param)` — 按参数类型（数值范围、枚举值、布尔型、功能性描述）执行偏离判定逻辑，返回 DeviationResult（参考 REQ-3.2, REQ-3.3, 设计文档偏离判定器）
-  - [ ] 8.4 实现 `batch_judge(matched_pairs)` — 批量判定所有参数对的偏离状态（参考 REQ-3.3）
-  - [ ] 8.5 实现 `classify_risk(deviation_result)` — 风险分级：实质性条款负偏离/无法确认标记为废标级风险；普通参数负偏离标记为得分扣分项（参考 REQ-3.4, REQ-3.5）
-  - [ ] 8.6 在 `reports/deviation_table.py` 中实现 `generate_deviation_table(task_id, output_format)` — 输出标准格式参数偏离表（招标要求、投标响应、偏离说明、备注），支持 Word 格式（参考 REQ-3.6, REQ-5.4）
+- [x] 8. 实现参数符合性比对引擎
+  - [x] 8.1 在 `engine/semantic_matcher.py` 中实现 `calculate_similarity(name1, name2)` — 调用平台内置 embedding 服务获取向量并计算余弦相似度（参考 REQ-3.1, 设计文档语义匹配器）
+  - [x] 8.2 实现 `match_parameters(bid_params, product_params)` — 执行四级匹配策略（精确匹配、别名匹配、向量匹配≥0.85、人工兜底），返回匹配对列表和未匹配项清单（参考 REQ-3.1, 设计文档语义匹配器匹配策略）
+  - [x] 8.3 在 `engine/deviation_judge.py` 中实现 `judge(bid_param, product_param)` — 按参数类型（数值范围、枚举值、布尔型、功能性描述）执行偏离判定逻辑，返回 DeviationResult（参考 REQ-3.2, REQ-3.3, 设计文档偏离判定器）
+  - [x] 8.4 实现 `batch_judge(matched_pairs)` — 批量判定所有参数对的偏离状态（参考 REQ-3.3）
+  - [x] 8.5 实现 `classify_risk(deviation_result)` — 风险分级：实质性条款负偏离/无法确认标记为废标级风险；普通参数负偏离标记为得分扣分项（参考 REQ-3.4, REQ-3.5）
+  - [x] 8.6 在 `reports/deviation_table.py` 中实现 `generate_deviation_table(task_id, output_format)` — 输出标准格式参数偏离表（招标要求、投标响应、偏离说明、备注），支持 Word 格式（参考 REQ-3.6, REQ-5.4）
 
 - [ ] 9. 实现技术得分估算模块
   - [ ] 9.1 在 `parsers/scoring_rule_parser.py` 中实现评分规则解析 — 将 `extract_scoring_rules` 的原始输出转换为 ScoringRule 结构化对象，区分 QUANTITATIVE/QUALITATIVE 两种规则类型，解析 Condition 列表（参考 REQ-4.1, 设计文档评分规则模型）
