@@ -27,6 +27,18 @@ _validator = SelfValidator()
 _pending_anomaly: dict[str, Any] = {}
 
 
+def _prompt_upload(context: dict) -> dict:
+    """引导用户上传招标文件。"""
+    intent_type = context.get("_agent_intent", "full_pipeline")
+    return {
+        "message": (
+            f"已识别分析模式: {intent_type}\n"
+            "请上传招标文件（支持 PDF/Word 格式）开始分析。"
+        ),
+        "components": [],
+    }
+
+
 def handle_message(user_input: str, context: dict[str, Any]) -> dict[str, Any]:
     """
     处理用户自然语言指令。
@@ -77,7 +89,7 @@ def handle_message(user_input: str, context: dict[str, Any]) -> dict[str, Any]:
             "您好，我是投标参数智能分析智能体。请提供以下信息开始分析：\n"
             "1. 上传招标文件（支持 PDF/Word 格式）\n"
             "2. 选择产品线进行参数比对\n\n"
-            "您也可以输入"帮助"查看完整指令列表。"
+            "您也可以输入'帮助'查看完整指令列表。"
         ),
         "components": [],
     }
@@ -217,7 +229,7 @@ def _prompt_modify(context: dict) -> dict:
         return {"message": "当前没有进行中的任务。", "components": []}
 
     return {
-        "message": "请告知需要修正的参数名称及新值。例如："修正 防火墙吞吐量 的 要求值 为 >=50 Gbps"",
+        "message": "请告知需要修正的参数名称及新值。例如：'修正 防火墙吞吐量 的 要求值 为 >=50 Gbps'",
         "components": [],
     }
 
@@ -302,14 +314,14 @@ def _show_help() -> dict:
     return {
         "message": (
             "**投标参数智能分析智能体** 支持以下操作：\n\n"
-            "- 上传招标文件（输入"分析"或直接发送文件）\n"
-            "- 自定义分析范围（如"只分析资格门槛项"）\n"
-            "- 查询进度（输入"进度"）\n"
-            "- 修正参数（输入"修正"）\n"
-            "- 重新计算（输入"重新计算"）\n"
-            "- 下载报告（输入"导出"或"报告"）\n"
-            "- 清除文件（输入"清除"）\n"
-            "- 查看帮助（输入"帮助"）"
+            "- 上传招标文件（输入'分析'或直接发送文件）\n"
+            "- 自定义分析范围（如'只分析资格门槛项'）\n"
+            "- 查询进度（输入'进度'）\n"
+            "- 修正参数（输入'修正'）\n"
+            "- 重新计算（输入'重新计算'）\n"
+            "- 下载报告（输入'导出'或'报告'）\n"
+            "- 清除文件（输入'清除'）\n"
+            "- 查看帮助（输入'帮助'）"
         ),
         "components": [],
     }
