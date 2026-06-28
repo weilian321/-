@@ -7,7 +7,7 @@ Updated: 2026-06-28
 
 ## Description
 
-投标参数智能分析 Skill 是运行于 MonkeyCode 平台上的智能投标辅助工具。采用 Python 技术栈构建核心分析引擎，SQLite 作为本地参数库存储，复用 MonkeyCode 平台 docparse 能力处理文档解析与 OCR。Skill 通过自然语言对话式交互引导用户完成招标文件上传、产品参数比对、技术得分估算、投标建议输出的全流程分析。
+投标参数智能分析 Skill 是运行于 MonkeyCode 平台上的智能投标辅助工具。采用 Python 技术栈构建核心分析引擎，SQLite 作为本地参数库存储，复用 MonkeyCode 平台内置 OCR 能力与 docparse 处理文档解析。Skill 通过自然语言对话式交互引导用户完成招标文件上传、产品参数比对、技术得分估算、投标建议输出的全流程分析。
 
 ---
 
@@ -23,7 +23,8 @@ graph TD
     B --> E["参数符合性比对引擎"]
     B --> F["技术得分估算模块"]
     B --> G["投标分析与报告模块"]
-    C --> H["MonkeyCode docparse"]
+    C --> H["MonkeyCode 平台内置 OCR"]
+    C --> H2["docparse 文档解析"]
     C --> I["结构化提取器"]
     D --> J["SQLite 参数库"]
     D --> K["版本管理器"]
@@ -144,7 +145,7 @@ PENDING → PARSING → PARSE_DONE → COMPARING → COMPARE_DONE
 
 #### 3.1 文档解析器 (`doc_parser.py`)
 
-**职责：** 调用 MonkeyCode docparse 能力完成 PDF/Word/扫描件的文本与表格提取。
+**职责：** 调用 MonkeyCode 平台内置 OCR 与 docparse 能力完成 PDF/Word/扫描件的文本与表格提取。
 
 **接口：**
 
