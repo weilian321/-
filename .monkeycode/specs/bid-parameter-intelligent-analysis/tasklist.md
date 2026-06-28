@@ -22,11 +22,11 @@
 - [x] 4. 检查点 — 参数库模块功能验证
   - 运行验证脚本确认 Excel 导入导出、版本切换、CRUD 操作可正常执行
 
-- [ ] 5. 实现招标文件解析模块
-  - [ ] 5.1 在 `parsers/doc_parser.py` 中实现 `parse_pdf(file_path)` — 调用 docparse 解析 PDF 文件，返回全文文本与表格数据数组（参考 REQ-1.1）
-  - [ ] 5.2 实现 `parse_docx(file_path)` — 调用 docparse 解析 Word 文件，返回全文文本与表格数据数组（参考 REQ-1.2）
-  - [ ] 5.3 实现 `detect_scan_type(file_path)` — 判断文件是否为图片扫描件，扫描件触发平台内置 OCR 路径（参考 REQ-1.3）
-  - [ ] 5.4 实现 `extract_tables(text_or_parsed_data)` — 将 docparse 返回的表格数据转换为标准行列结构，保持合并单元格信息（参考 REQ-1.5）
+- [x] 5. 实现招标文件解析模块
+  - [x] 5.1 在 `parsers/doc_parser.py` 中实现 `parse_pdf(file_path)` — 调用 docparse 解析 PDF 文件，返回全文文本与表格数据数组（参考 REQ-1.1）
+  - [x] 5.2 实现 `parse_docx(file_path)` — 调用 docparse 解析 Word 文件，返回全文文本与表格数据数组（参考 REQ-1.2）
+  - [x] 5.3 实现 `detect_scan_type(file_path)` — 判断文件是否为图片扫描件，扫描件触发平台内置 OCR 路径（参考 REQ-1.3）
+  - [x] 5.4 实现 `extract_tables(text_or_parsed_data)` — 将 docparse 返回的表格数据转换为标准行列结构，保持合并单元格信息（参考 REQ-1.5）
 
 - [ ] 6. 实现结构化参数提取器
   - [ ] 6.1 在 `parsers/table_extractor.py` 中实现 `locate_key_sections(full_text)` — 基于章节标题关键词匹配（技术参数、技术规格、评分、资格、门槛等）定位技术参数章节、评分细则表、资格门槛条款的起始/结束位置，返回 Section 列表（参考 REQ-1.4）
