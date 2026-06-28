@@ -1,18 +1,76 @@
-# 投标参数智能分析 Skill - 接口文档
+# 投标参数智能分析智能体 - 接口文档
 
-本文档描述 Skill 各模块的公开接口与数据模型。
+本文档描述智能体各模块的公开接口与数据模型。
 
 ---
 
-## Skill 交互层 (`skill.py`)
+## Agent 交互层 (`skill.py`)
 
 | 方法 | 参数 | 返回 | 说明 |
 |------|------|------|------|
-| `handle_message(user_input, context)` | user_input: str, context: dict | dict | 解析自然语言指令并路由 |
-| `handle_file_upload(file_path, file_type)` | file_path: str, file_type: str | dict | 校验并接收招标文件上传 |
+| `handle_message(user_input, context)` | user_input: str, context: dict | dict | 规划引擎解析意图，调度工具链执行 |
+| `handle_file_upload(file_path, file_type)` | file_path: str, file_type: str | dict | 校验文件、解析、存入短期记忆，异常触发询问 |
+| `handle_user_feedback(feedback)` | feedback: str | dict | 处理异常询问回复，应用修正策略 |
 | `get_progress(task_id)` | task_id: str | dict | 查询任务执行进度 |
-| `modify_parameter(param_id, edits)` | param_id: str, edits: dict | dict | 修正识别参数条目 |
-| `recalculate(task_id)` | task_id: str | dict | 基于修正结果重新比对 |
+| `modify_parameter(param_id, edits)` | param_id: str, edits: dict | dict | 修正识别参数条目，更新记忆 |
+| `recalculate(task_id)` | task_id: str | dict | 基于修正结果重新比对，自校验覆盖率 |
+
+---
+
+## Agent 核心中枢 (`agent/`)
+
+### `planner.py` — 自主任务规划引擎
+
+| 类/方法 | 参数 | 返回 | 说明 |
+|------|------|------|------|
+| `AgentPlanner` | — | — | 规划架构控制器 |
+| `parse_intent(user_input)` | user_input: str | PlanContext | 子任务拆分与意图识别 |
+| `generate_plan(context)` | context: PlanContext | Plan | 生成有序执行步骤序列 |
+| `adjust_plan(plan, feedback)` | plan: Plan, feedback: dict | Plan | 根据中间结果动态调整计划 |
+| `next_step(plan)` | plan: Plan | Step | 获取下一个待执行步骤 |
+
+### `scheduler.py` — 多工具调度器
+
+| 类/方法 | 参数 | 返回 | 说明 |
+|------|------|------|------|
+| `AgentScheduler` | — | — | 调度器架构控制器 |
+| `register_tool(signature)` | signature: ToolSignature | None | 注册业务工具 |
+| `execute(tool_name, params)` | tool_name: str, params: dict | ExecutionLog | 带重试/超时的工具执行 |
+| `execute_all(tool_name, batches)` | tool_name: str, batches: list | list[ExecutionLog] | 批量执行（支持并行） |
+| `get_execution_logs()` | — | list[ExecutionLog] | 获取执行日志 |
+
+### `memory.py` — 双层记忆系统
+
+| 类/方法 | 参数 | 返回 | 说明 |
+|------|------|------|------|
+| `MemoryManager` | db_config: dict | — | 记忆管理器入口 |
+| `remember_param(item)` | item: ParameterItem | None | 存入短期会话记忆 |
+| `store_project_record(record)` | record: dict | None | 持久化项目记录 |
+| `find_similar_history(query)` | query: str | list[dict] | 历史项目相似搜索 |
+| `suggest_alias(param_name)` | param_name: str | list[str] | 基于历史推荐别名 |
+| `record_correction(correction)` | correction: dict | None | 记录修正模式 |
+| `find_matching_corrections(context)` | context: dict | list[dict] | 查找可复用修正模式 |
+
+### `exception_handler.py` — 异常处理器
+
+| 类/方法 | 参数 | 返回 | 说明 |
+|------|------|------|------|
+| `ExceptionHandler` | — | — | 异常处理架构控制器 |
+| `detect_anomaly(result, context)` | result: dict, context: dict | Anomaly | 基于结果模式检测异常 |
+| `resolve_strategy(anomaly)` | anomaly: Anomaly | Strategy | 映射处理策略 |
+| `formulate_query(anomaly)` | anomaly: Anomaly | QueryMessage | 生成自然语言异常询问 |
+| `apply_resolution(anomaly, reply)` | anomaly: Anomaly, reply: str | Resolution | 应用用户反馈解决异常 |
+| `alert_high_risk(result, reason)` | result: dict, reason: str | Alert | 高危风险即时预警 |
+
+### `self_validator.py` — 自校验器
+
+| 类/方法 | 参数 | 返回 | 说明 |
+|------|------|------|------|
+| `SelfValidator` | — | — | 校验器架构控制器 |
+| `validate_completeness(results)` | results: dict | ValidationReport | 检查参数/评分覆盖率 |
+| `identify_gaps(results)` | results: dict | list[Gap] | 识别未匹配/未评分条目 |
+| `trigger_remediation(gaps)` | gaps: list[Gap] | Remediation | 触发自动补跑流程 |
+| `summarize_quality(report)` | report: ValidationReport | str | 质量评级输出 |
 
 ---
 

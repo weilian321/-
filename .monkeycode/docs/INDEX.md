@@ -1,6 +1,6 @@
-# 投标参数智能分析 Skill - 文档索引
+# 投标参数智能分析智能体 - 文档索引
 
-基于 MonkeyCode 平台开发的智能投标辅助 Skill，实现招标文件自动解析、参数自动比对、技术得分估算、投标决策建议。
+基于 MonkeyCode 平台开发的自主投标辅助智能体，具备任务规划、工具调度、双层记忆与异常主动交互能力，实现招标文件自动解析、参数自动比对、技术得分估算、投标决策建议。
 
 **快速链接**: [架构](./ARCHITECTURE.md) | [接口](./INTERFACES.md) | [开发者指南](./DEVELOPER_GUIDE.md)
 
@@ -23,13 +23,13 @@
 
 | 模块 | 描述 | README |
 |------|------|--------|
+| `agent/` | 智能体核心中枢：任务规划、工具调度、记忆系统、异常处理、自校验 | [README](./模块/agent.md) |
 | `config/` | 全局配置、产品线定义、评分模板 | [README](./模块/config.md) |
 | `parsers/` | 招标文件解析与结构化提取 | [README](./模块/parsers.md) |
 | `database/` | SQLite 数据模型与 CRUD | [README](./模块/database.md) |
 | `engine/` | 语义匹配、偏离判定、得分计算、决策推理 | [README](./模块/engine.md) |
 | `reports/` | 偏离表与投标分析报告生成 | [README](./模块/reports.md) |
 | `storage/` | 文件临时存储与历史任务管理 | [README](./模块/storage.md) |
-| `storage/` | 文件临时存储与历史任务管理 | - |
 
 ---
 
