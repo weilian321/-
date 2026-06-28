@@ -7,10 +7,10 @@
    - 创建 `config/scoring_templates/` 目录并写入默认评分模板 JSON 文件（参考 REQ-9.2）
    - 创建 `requirements.txt`，声明依赖：openpyxl、python-docx、Jinja2、reportlab、numpy、pytest
 
-- [ ] 2. 实现数据库数据模型与初始化
-  - [ ] 2.1 在 `database/models.py` 中定义 SQLAlchemy/原生 SQL 数据模型：ProductLine、ProductVersion、ParameterRecord、EvidenceIndex、AnalysisTask、ParsedParameter、DeviationResult、ScoreResult（参考设计文档 Data Models 章节与 REQ-2.1）
-  - [ ] 2.2 在 `database/migrations.py` 中实现 `init_db()` 和 `migrate()` 函数，自动建表与版本迁移
-  - [ ] 2.3 在 `database/repository.py` 中实现 `create_product_line(name, description)` 和 `get_active_params(product_line_id)`（参考 REQ-2.1, REQ-2.2）
+- [x] 2. 实现数据库数据模型与初始化
+  - [x] 2.1 在 `database/models.py` 中定义 SQLAlchemy/原生 SQL 数据模型：ProductLine、ProductVersion、ParameterRecord、EvidenceIndex、AnalysisTask、ParsedParameter、DeviationResult、ScoreResult（参考设计文档 Data Models 章节与 REQ-2.1）
+  - [x] 2.2 在 `database/migrations.py` 中实现 `init_db()` 和 `migrate()` 函数，自动建表与版本迁移
+  - [x] 2.3 在 `database/repository.py` 中实现 `create_product_line(name, description)` 和 `get_active_params(product_line_id)`（参考 REQ-2.1, REQ-2.2）
   - [ ]* 2.4 为数据模型编写单元测试 — 验证 ProductLine/ProductVersion/ParameterRecord 的创建、查询、级联关系
 
 - [ ] 3. 实现产品参数基准库 CRUD 与版本管理
