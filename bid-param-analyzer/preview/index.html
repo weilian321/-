@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投标参数智能分析</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
+.header{background:#fff;border-bottom:1px solid #e2e8f0;padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:18px;color:#1e40af}
+.header .mode-tabs{display:flex;gap:4px;background:#f1f5f9;border-radius:10px;padding:3px}
+.mode-tab{padding:6px 16px;border:none;border-radius:8px;font-size:13px;cursor:pointer;background:transparent;color:#64748b;transition:all .2s}
+.mode-tab.active{background:#1d4ed8;color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.main{max-width:1000px;margin:24px auto;padding:0 16px}
+
+.upload-zone{border:2px dashed #cbd5e1;border-radius:12px;padding:40px;text-align:center;background:#fff;cursor:pointer;transition:border-color .2s;margin-bottom:20px}
+.upload-zone:hover{border-color:#1d4ed8}
+.upload-zone .icon{font-size:48px;margin-bottom:12px}
+.upload-zone p{color:#64748b;font-size:14px}
+.file-info{display:flex;align-items:center;gap:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:20px}
+.file-info .name{font-weight:600;font-size:14px;flex:1}
+.file-info .size{font-size:12px;color:#64748b}
+.file-info .remove{color:#ef4444;cursor:pointer;font-size:20px;line-height:1}
+
+.kb-config{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.kb-config .label{font-size:13px;color:#475569;white-space:nowrap}
+.kb-config input{padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;width:260px;outline:none}
+.kb-config input:focus{border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.1)}
+.kb-config .status{display:flex;align-items:center;gap:6px;font-size:12px;margin-left:auto}
+.kb-status-dot{width:8px;height:8px;border-radius:50%}
+.kb-status-dot.off{background:#cbd5e1}
+.kb-status-dot.on{background:#16a34a;box-shadow:0 0 6px rgba(22,163,74,.4)}
+.kb-status-dot.testing{background:#f59e0b;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.section{background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:16px;overflow:hidden}
+.section-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;cursor:pointer}
+.section-header h3{font-size:15px;display:flex;align-items:center;gap:8px}
+.section-header .arrow{transition:transform .2s;font-size:12px}
+.section-header .arrow.open{transform:rotate(180deg)}
+.section-body{padding:20px;display:none}
+.section-body.open{display:block}
+
+.param-table{width:100%;border-collapse:collapse;font-size:13px}
+.param-table th{background:#f8fafc;padding:10px 14px;text-align:left;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0}
+.param-table td{padding:10px 14px;border-bottom:1px solid #f1f5f9}
+.param-table tr:hover td{background:#f8fafc}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge.pass{background:#dcfce7;color:#166534}
+.badge.warn{background:#fef3c7;color:#92400e}
+.badge.fail{background:#fee2e2;color:#991b1b}
+.badge.star{background:#ede9fe;color:#6b21a8}
+.badge.api{background:#dbeafe;color:#1e40af}
+
+.result-card{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.metric{background:#f8fafc;border-radius:10px;padding:16px;text-align:center}
+.metric .m-val{font-size:28px;font-weight:700}
+.metric .m-label{font-size:12px;color:#64748b;margin-top:4px}
+.m-val.green{color:#16a34a}.m-val.blue{color:#2563eb}.m-val.purple{color:#9333ea}.m-val.amber{color:#d97706}
+
+.decision-box{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:2px solid #93c5fd;border-radius:12px;padding:24px;text-align:center;margin-bottom:16px}
+.decision-box .d-label{font-size:12px;color:#64748b;margin-bottom:4px}
+.decision-box .d-conclusion{font-size:26px;font-weight:800;color:#1e40af;margin-bottom:8px}
+.decision-box .d-reason{font-size:14px;color:#475569;line-height:1.6}
+.decision-box.bid .d-conclusion{color:#16a34a}
+.decision-box.no-bid .d-conclusion{color:#dc2626}
+.decision-box.caution .d-conclusion{color:#d97706}
+
+.risk-list{display:flex;flex-direction:column;gap:8px}
+.risk-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f8fafc;border-radius:8px;font-size:13px}
+.risk-item .sev{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sev-high{background:#ef4444}.sev-mid{background:#f59e0b}.sev-low{background:#10b981}
+
+.suggestions{display:flex;flex-direction:column;gap:8px}
+.suggestion{padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:13px;display:flex;gap:8px}
+.suggestion .s-idx{color:#16a34a;font-weight:700;min-width:20px}
+
+.api-console{background:#0f172a;color:#e2e8f0;border-radius:8px;padding:16px;font-family:"SF Mono","Cascadia Code",Consolas,monospace;font-size:12px;line-height:1.8;max-height:200px;overflow-y:auto;margin-top:12px}
+.api-console .req{color:#fbbf24}
+.api-console .resp{color:#4ade80}
+.api-console .info{color:#94a3b8}
+.api-console .err{color:#f87171}
+.api-console .match{color:#38bdf8}
+.api-console .highlight{background:rgba(56,189,248,.1)}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:#1d4ed8;color:#fff}
+.btn-primary:hover{background:#1e40af}
+.btn-primary:disabled{background:#94a3b8;cursor:not-allowed}
+.btn-outline{background:#fff;border:1px solid #cbd5e1;color:#475569}
+.btn-outline:hover{border-color:#1d4ed8;color:#1d4ed8}
+.btn-sm{padding:6px 14px;font-size:12px}
+
+.progress-bar{height:4px;background:#e2e8f0;border-radius:2px;margin-bottom:20px;overflow:hidden}
+.progress-fill{height:100%;background:#1d4ed8;border-radius:2px;transition:width .3s}
+.step-indicator{display:flex;justify-content:space-between;margin-bottom:16px}
+.step-dot{width:12px;height:12px;border-radius:50%;background:#e2e8f0;transition:all .3s}
+.step-dot.active{background:#1d4ed8;box-shadow:0 0 0 4px rgba(29,78,216,.2)}
+.step-dot.done{background:#16a34a}
+
+.hidden{display:none!important}
+
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11px}
+.tooltip{position:relative;cursor:help;border-bottom:1px dashed #64748b}
+.tooltip:hover:after{content:attr(data-tip);position:absolute;bottom:120%;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:6px 10px;border-radius:6px;font-size:11px;white-space:nowrap;z-index:10}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>投标参数智能分析</h1>
+  <div class="mode-tabs" id="modeTabs">
+    <button class="mode-tab active" data-mode="full">全流程分析</button>
+    <button class="mode-tab" data-mode="qualification">资格门槛</button>
+    <button class="mode-tab" data-mode="performance">性能参数</button>
+    <button class="mode-tab" data-mode="score">得分优先</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="kb-config">
+    <span class="label">公司知识库 API：</span>
+    <input type="text" id="kbUrl" value="https://kb.company.com/api/v1/product-params" placeholder="知识库 API 地址">
+    <input type="text" id="kbKey" value="sk-****-****-****-****" placeholder="API Key" type="password" style="width:200px">
+    <button class="btn btn-sm btn-outline" id="kbTestBtn" onclick="testKBConnection()">测试连接</button>
+    <span class="status">
+      <span class="kb-status-dot off" id="kbStatusDot"></span>
+      <span id="kbStatusText" style="color:#64748b">未连接</span>
+    </span>
+  </div>
+
+  <div class="upload-zone" id="uploadZone" onclick="document.getElementById('hiddenFile').click()">
+    <div class="icon" id="uploadIcon">&#128206;</div>
+    <p id="uploadText">点击上传招标文件（支持 PDF / Word）</p>
+  </div>
+  <input type="file" id="hiddenFile" accept=".pdf,.doc,.docx" class="hidden" onchange="handleFile(this)">
+  <div class="file-info hidden" id="fileInfo">
+    <span style="font-size:20px">&#128196;</span>
+    <span class="name" id="fileName"></span>
+    <span class="size" id="fileSize"></span>
+    <span class="remove" onclick="removeFile()">&#10005;</span>
+  </div>
+
+  <div style="text-align:center;margin-bottom:20px">
+    <button class="btn btn-primary" id="analyzeBtn" disabled onclick="startAnalysis()">
+      &#128269; 开始分析
+    </button>
+  </div>
+
+  <div id="progress" class="hidden">
+    <div class="step-indicator" id="stepIndicator"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <p style="text-align:center;font-size:13px;color:#64748b" id="progressText"></p>
+    <div class="api-console" id="apiLog"></div>
+  </div>
+
+  <div id="results" class="hidden">
+
+    <div class="section" id="secParams">
+      <div class="section-header" onclick="toggleSection('secParams')">
+        <h3>&#128203; 招标参数解析 <span class="badge pass" id="paramCount"></span></h3>
+        <span class="arrow open" id="arrowParams">&#9660;</span>
+      </div>
+      <div class="section-body open" id="bodyParams">
+        <table class="param-table"><thead><tr>
+          <th>参数名称</th><th>要求值</th><th>单位</th><th>类型</th><th>实质性</th>
+        </tr></thead>
+        <tbody id="paramsBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="section" id="secKB">
+      <div class="section-header" onclick="toggleSection('secKB')">
+        <h3>&#128300; 知识库匹配 <span class="badge api" id="kbMatchCount"></span></h3>
+        <span class="arrow open" id="arrowKB">&#9660;</span>
+      </div>
+      <div class="section-body open" id="bodyKB">
+        <div class="api-console" id="kbLog"></div>
+        <table class="param-table" style="margin-top:12px"><thead><tr>
+          <th>招标参数</th><th>知识库产品</th><th>匹配度</th><th>来源</th>
+        </tr></thead>
+        <tbody id="kbMatchBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="section" id="secDeviation">
+      <div class="section-header" onclick="toggleSection('secDeviation')">
+        <h3>&#128200; 偏离判定 <span class="badge pass" id="deviationStatus"></span></h3>
+        <span class="arrow" id="arrowDeviation">&#9660;</span>
+      </div>
+      <div class="section-body" id="bodyDeviation">
+        <table class="param-table"><thead><tr>
+          <th>参数</th><th>招标要求</th><th>投标响应</th><th>偏离状态</th><th>数据来源</th><th>风险</th>
+        </tr></thead>
+        <tbody id="deviationBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="section" id="secScore">
+      <div class="section-header" onclick="toggleSection('secScore')">
+        <h3>&#127942; 技术得分</h3>
+        <span class="arrow" id="arrowScore">&#9660;</span>
+      </div>
+      <div class="section-body" id="bodyScore">
+        <div class="result-card" id="scoreCard"></div>
+        <table class="param-table"><thead><tr>
+          <th>评分项</th><th>满分</th><th>得分</th><th>得分率</th><th>依据来源</th>
+          <th>说明</th>
+        </tr></thead>
+        <tbody id="scoreBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="section" id="secDecision">
+      <div class="section-header" onclick="toggleSection('secDecision')">
+        <h3>&#128202; 投标决策</h3>
+        <span class="arrow open" id="arrowDecision">&#9660;</span>
+      </div>
+      <div class="section-body open" id="bodyDecision">
+        <div class="decision-box" id="decisionBox">
+          <div class="d-label">分析结论</div>
+          <div class="d-conclusion" id="decisionConclusion"></div>
+          <div class="d-reason" id="decisionReason"></div>
+        </div>
+        <div class="result-card" style="grid-template-columns:repeat(2,1fr)">
+          <div class="metric"><div class="m-val" style="font-size:20px;color:#475569" id="decisionKbParams"></div><div class="m-label">知识库匹配参数数</div></div>
+          <div class="metric"><div class="m-val" style="font-size:20px;color:#475569" id="decisionApiCalls"></div><div class="m-label">API 调用次数</div></div>
+        </div>
+        <h4 style="font-size:14px;color:#475569;margin-bottom:8px">风险评估</h4>
+        <div class="risk-list" id="riskList"></div>
+        <h4 style="font-size:14px;color:#475569;margin:16px 0 8px">提升建议</h4>
+        <div class="suggestions" id="suggestionList"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentMode = 'full';
+let taskState = {};
+
+document.querySelectorAll('.mode-tab').forEach(tab => {
+  tab.addEventListener('click', e => {
+    document.querySelector('.mode-tab.active').classList.remove('active');
+    e.target.classList.add('active');
+    currentMode = e.target.dataset.mode;
+    taskState.mode = currentMode;
+  });
+});
+
+function handleFile(input) {
+  const f = input.files[0];
+  if(!f) return;
+  document.getElementById('fileName').textContent = f.name;
+  document.getElementById('fileSize').textContent = formatSize(f.size);
+  document.getElementById('fileInfo').classList.remove('hidden');
+  document.getElementById('uploadZone').classList.add('hidden');
+  document.getElementById('analyzeBtn').disabled = false;
+  taskState.file = f;
+}
+
+function removeFile() {
+  taskState.file = null;
+  document.getElementById('fileInfo').classList.add('hidden');
+  document.getElementById('uploadZone').classList.remove('hidden');
+  document.getElementById('analyzeBtn').disabled = true;
+}
+
+function formatSize(bytes) {
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+
+function toggleSection(id) {
+  const body = document.getElementById('body' + id.slice(3));
+  const arrow = document.getElementById('arrow' + id.slice(3));
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function setKBStatus(state) {
+  const dot = document.getElementById('kbStatusDot');
+  const text = document.getElementById('kbStatusText');
+  dot.className = 'kb-status-dot';
+  if (state === 'on') { dot.classList.add('on'); text.textContent = '已连接'; text.style.color = '#16a34a'; }
+  else if (state === 'testing') { dot.classList.add('testing'); text.textContent = '测试中...'; text.style.color = '#d97706'; }
+  else { dot.classList.add('off'); text.textContent = '未连接'; text.style.color = '#64748b'; }
+}
+
+function testKBConnection() {
+  const url = document.getElementById('kbUrl').value.trim();
+  if (!url) { alert('请输入知识库 API 地址'); return; }
+  setKBStatus('testing');
+  setTimeout(() => {
+    setKBStatus('on');
+    document.getElementById('analyzeBtn').disabled = !taskState.file;
+  }, 1200);
+}
+
+const steps = [
+  { name: '文档解析', api: false },
+  { name: '参数提取', api: false },
+  { name: '知识库查询', api: true },
+  { name: '语义匹配', api: true },
+  { name: '偏离判定', api: false },
+  { name: '得分计算', api: false },
+  { name: '决策推理', api: false },
+];
+
+const mockData = {
+  full: {
+    params: [
+      {name:'整机交换容量', value:'>=85 Tbps', unit:'Tbps', type:'数值', material:true},
+      {name:'整机包转发率', value:'>=42000 Mpps', unit:'Mpps', type:'数值', material:true},
+      {name:'业务槽位数量', value:'>=8 个', unit:'个', type:'数值', material:false},
+      {name:'主控板冗余', value:'1+1 冗余', unit:'', type:'文本', material:true},
+      {name:'电源冗余', value:'N+1 冗余', unit:'', type:'文本', material:false},
+      {name:'风扇冗余', value:'N+1 冗余', unit:'', type:'文本', material:false},
+      {name:'MAC 地址表容量', value:'>=512K', unit:'条', type:'数值', material:false},
+      {name:'ARP 表容量', value:'>=256K', unit:'条', type:'数值', material:false},
+      {name:'VLAN 数量', value:'>=4096', unit:'个', type:'数值', material:false},
+      {name:'支持 IPv6', value:'是', unit:'', type:'布尔', material:true},
+      {name:'支持 VXLAN', value:'是', unit:'', type:'布尔', material:false},
+      {name:'支持 Telemetry', value:'是', unit:'', type:'布尔', material:false},
+    ],
+    kbMatches: [
+      {bid:'整机交换容量', product:'CloudEngine 16800 交换容量', score:'98%', source:'产品参数库 v3.2'},
+      {bid:'整机包转发率', product:'CloudEngine 16800 包转发率', score:'97%', source:'产品参数库 v3.2'},
+      {bid:'业务槽位数量', product:'CE16800 业务板卡规格', score:'100%', source:'硬件规格表 v2.1'},
+      {bid:'主控板冗余', product:'CE16800 主控板冗余配置', score:'100%', source:'产品参数库 v3.2'},
+      {bid:'电源冗余', product:'CE16800 电源模块规格', score:'100%', source:'硬件规格表 v2.1'},
+      {bid:'风扇冗余', product:'CE16800 散热系统规格', score:'100%', source:'硬件规格表 v2.1'},
+      {bid:'MAC 地址表容量', product:'CloudEngine MAC 容量', score:'100%', source:'产品参数库 v3.2'},
+      {bid:'ARP 表容量', product:'CloudEngine ARP 容量', score:'100%', source:'产品参数库 v3.2'},
+      {bid:'VLAN 数量', product:'CloudEngine VLAN 规格', score:'95%', source:'产品参数库 v3.2'},
+      {bid:'支持 IPv6', product:'CloudEngine IPv6 能力', score:'100%', source:'特性清单 v1.5'},
+      {bid:'支持 VXLAN', product:'CloudEngine VXLAN 能力', score:'100%', source:'特性清单 v1.5'},
+      {bid:'支持 Telemetry', product:'CloudEngine Telemetry 能力', score:'100%', source:'特性清单 v1.5'},
+    ],
+    deviations: [
+      {param:'整机交换容量', req:'>=85 Tbps', resp:'102.4 Tbps', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'整机包转发率', req:'>=42000 Mpps', resp:'46800 Mpps', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'业务槽位数量', req:'>=8 个', resp:'12 个', dev:'正偏离', source:'硬件规格表 v2.1', risk:'low'},
+      {param:'主控板冗余', req:'1+1 冗余', resp:'1+1 冗余', dev:'完全响应', source:'产品参数库 v3.2', risk:'low'},
+      {param:'电源冗余', req:'N+1 冗余', resp:'N+1 冗余', dev:'完全响应', source:'硬件规格表 v2.1', risk:'low'},
+      {param:'风扇冗余', req:'N+1 冗余', resp:'N+1 冗余', dev:'完全响应', source:'硬件规格表 v2.1', risk:'low'},
+      {param:'MAC 地址表容量', req:'>=512K', resp:'1024K', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'ARP 表容量', req:'>=256K', resp:'512K', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'VLAN 数量', req:'>=4096', resp:'4096', dev:'完全响应', source:'产品参数库 v3.2', risk:'low'},
+      {param:'支持 IPv6', req:'是', resp:'是', dev:'完全响应', source:'特性清单 v1.5', risk:'low'},
+      {param:'支持 VXLAN', req:'是', resp:'是', dev:'完全响应', source:'特性清单 v1.5', risk:'low'},
+      {param:'支持 Telemetry', req:'是', resp:'是', dev:'完全响应', source:'特性清单 v1.5', risk:'low'},
+    ],
+    conclusion:'建议投标', conclusionType:'bid',
+    reason:'全部实质性条款满足要求，关键技术参数均优于招标指标。12 项参数全部由知识库 API 自动匹配，总分 94/100，竞争优势明显。',
+    totalScore:94, maxScore:100, scoreRate:0.94,
+    kbParamCount:12, apiCallCount:3,
+    risks: [
+      {sev:'low', text:'无中高风险项，所有偏离均为正向偏离或完全响应。'},
+      {sev:'low', text:'VLAN 数量恰好满足最低要求，建议补充弹性扩展方案。'},
+    ],
+    suggestions: [
+      '在商务标书中强调整机交换容量（102.4Tbps）远超招标要求的亮点。',
+      '补充 VLAN 弹性扩展方案，消除评分专家对容量紧贴要求的顾虑。',
+      '附上 IPv6/VXLAN/Telemetry 的实际部署案例，增强技术可信度。',
+    ]
+  },
+  qualification: {
+    params: [
+      {name:'整机交换容量', value:'>=85 Tbps', unit:'Tbps', type:'数值', material:true},
+      {name:'整机包转发率', value:'>=42000 Mpps', unit:'Mpps', type:'数值', material:true},
+      {name:'主控板冗余', value:'1+1 冗余', unit:'', type:'文本', material:true},
+      {name:'支持 IPv6', value:'是', unit:'', type:'布尔', material:true},
+    ],
+    kbMatches: [
+      {bid:'整机交换容量', product:'CloudEngine 16800 交换容量', score:'98%', source:'产品参数库 v3.2'},
+      {bid:'整机包转发率', product:'CloudEngine 16800 包转发率', score:'97%', source:'产品参数库 v3.2'},
+      {bid:'主控板冗余', product:'CE16800 主控板冗余配置', score:'100%', source:'产品参数库 v3.2'},
+      {bid:'支持 IPv6', product:'CloudEngine IPv6 能力', score:'100%', source:'特性清单 v1.5'},
+    ],
+    deviations: [
+      {param:'整机交换容量', req:'>=85 Tbps', resp:'102.4 Tbps', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'整机包转发率', req:'>=42000 Mpps', resp:'46800 Mpps', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'主控板冗余', req:'1+1 冗余', resp:'1+1 冗余', dev:'完全响应', source:'产品参数库 v3.2', risk:'low'},
+      {param:'支持 IPv6', req:'是', resp:'是', dev:'完全响应', source:'特性清单 v1.5', risk:'low'},
+    ],
+    conclusion:'满足资格门槛', conclusionType:'bid',
+    reason:'全部实质性条款（4 条）均满足要求，数据均来自知识库 API 自动匹配，准入门槛通过。',
+    totalScore:100, maxScore:100, scoreRate:1.0,
+    kbParamCount:4, apiCallCount:1,
+    risks:[{sev:'low', text:'资格门槛项全部通过，无潜在废标风险。'}],
+    suggestions:['资格门槛项全部满足，可进入详细参数比对阶段。']
+  },
+  performance: {
+    params: [
+      {name:'整机交换容量', value:'>=85 Tbps', unit:'Tbps', type:'数值', material:true},
+      {name:'整机包转发率', value:'>=42000 Mpps', unit:'Mpps', type:'数值', material:true},
+      {name:'MAC 地址表容量', value:'>=512K', unit:'条', type:'数值', material:false},
+      {name:'ARP 表容量', value:'>=256K', unit:'条', type:'数值', material:false},
+      {name:'VLAN 数量', value:'>=4096', unit:'个', type:'数值', material:false},
+    ],
+    kbMatches: [
+      {bid:'整机交换容量', product:'CloudEngine 16800 交换容量', score:'98%', source:'产品参数库 v3.2'},
+      {bid:'整机包转发率', product:'CloudEngine 16800 包转发率', score:'97%', source:'产品参数库 v3.2'},
+      {bid:'MAC 地址表容量', product:'CloudEngine MAC 容量', score:'100%', source:'产品参数库 v3.2'},
+      {bid:'ARP 表容量', product:'CloudEngine ARP 容量', score:'100%', source:'产品参数库 v3.2'},
+      {bid:'VLAN 数量', product:'CloudEngine VLAN 规格', score:'95%', source:'产品参数库 v3.2'},
+    ],
+    deviations: [
+      {param:'整机交换容量', req:'>=85 Tbps', resp:'102.4 Tbps', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'整机包转发率', req:'>=42000 Mpps', resp:'46800 Mpps', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'MAC 地址表容量', req:'>=512K', resp:'1024K', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'ARP 表容量', req:'>=256K', resp:'512K', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'VLAN 数量', req:'>=4096', resp:'4096', dev:'完全响应', source:'产品参数库 v3.2', risk:'mid'},
+    ],
+    conclusion:'性能优异', conclusionType:'bid',
+    reason:'5 项核心性能参数均通过知识库匹配完成比对，4 项正偏离、1 项完全响应。交换容量超出要求 20%，包转发率超出 11%。',
+    totalScore:92, maxScore:100, scoreRate:0.92,
+    kbParamCount:5, apiCallCount:2,
+    risks:[{sev:'mid', text:'VLAN 数量紧贴最低要求，建议补充扩展方案说明。'}],
+    suggestions:['突出交换容量与包转发率的大幅领先优势。','补充网络虚拟化能力说明（VXLAN/EVPN 支持）。']
+  },
+  score: {
+    params: [
+      {name:'整机交换容量', value:'>=85 Tbps', unit:'Tbps', type:'数值', material:true},
+      {name:'整机包转发率', value:'>=42000 Mpps', unit:'Mpps', type:'数值', material:true},
+      {name:'业务槽位数量', value:'>=8 个', unit:'个', type:'数值', material:false},
+      {name:'MAC 地址表容量', value:'>=512K', unit:'条', type:'数值', material:false},
+      {name:'ARP 表容量', value:'>=256K', unit:'条', type:'数值', material:false},
+    ],
+    kbMatches: [
+      {bid:'整机交换容量', product:'CloudEngine 16800 交换容量', score:'98%', source:'产品参数库 v3.2'},
+      {bid:'整机包转发率', product:'CloudEngine 16800 包转发率', score:'97%', source:'产品参数库 v3.2'},
+      {bid:'业务槽位数量', product:'CE16800 业务板卡规格', score:'100%', source:'硬件规格表 v2.1'},
+      {bid:'MAC 地址表容量', product:'CloudEngine MAC 容量', score:'100%', source:'产品参数库 v3.2'},
+      {bid:'ARP 表容量', product:'CloudEngine ARP 容量', score:'100%', source:'产品参数库 v3.2'},
+    ],
+    deviations: [
+      {param:'整机交换容量', req:'>=85 Tbps', resp:'102.4 Tbps', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'整机包转发率', req:'>=42000 Mpps', resp:'46800 Mpps', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'业务槽位数量', req:'>=8 个', resp:'12 个', dev:'正偏离', source:'硬件规格表 v2.1', risk:'low'},
+      {param:'MAC 地址表容量', req:'>=512K', resp:'1024K', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+      {param:'ARP 表容量', req:'>=256K', resp:'512K', dev:'正偏离', source:'产品参数库 v3.2', risk:'low'},
+    ],
+    conclusion:'评分优选', conclusionType:'bid',
+    reason:'全部评分项均通过知识库自动匹配，数据来自产品参数库和硬件规格表。技术得分 94/100。',
+    totalScore:94, maxScore:100, scoreRate:0.94,
+    kbParamCount:5, apiCallCount:2,
+    risks:[{sev:'low', text:'无扣分项，所有参数均达到或超出招标要求。'}],
+    suggestions:['交换容量（30 分满分）和业务槽位数（20 分满分）为最强得分项，知识库数据为评分提供了权威支撑。','可对比友商同档产品参数差异，突出我方优势。']
+  }
+};
+
+const kbAPIResponses = {
+  full: [
+    {
+      endpoint: 'POST /api/v1/product-params/search',
+      request: {product_line:'network-switch', keywords:['交换容量','包转发率','槽位','冗余','MAC','ARP','VLAN','IPv6','VXLAN','Telemetry']},
+      response: {matched:12, total:12, source_version:'v3.2', elapsed_ms:184},
+    },
+    {
+      endpoint: 'POST /api/v1/product-params/detail',
+      request: {product_line:'network-switch', param_ids:['hw-switch-cap','hw-fwd-rate','hw-slot-count','hw-mpu-redundant','hw-psu-redundant','hw-fan-redundant']},
+      response: {records:6, source:'硬件规格表 v2.1', elapsed_ms:92},
+    },
+    {
+      endpoint: 'POST /api/v1/product-params/detail',
+      request: {product_line:'network-switch', param_ids:['sw-mac-cap','sw-arp-cap','sw-vlan-cap','sw-ipv6','sw-vxlan','sw-telemetry']},
+      response: {records:6, source:'特性清单 v1.5', elapsed_ms:78},
+    },
+  ],
+  qualification: [
+    {
+      endpoint: 'POST /api/v1/product-params/search',
+      request: {product_line:'network-switch', keywords:['交换容量','包转发率','主控板','IPv6'], material_only:true},
+      response: {matched:4, total:4, source_version:'v3.2', elapsed_ms:120},
+    },
+  ],
+  performance: [
+    {
+      endpoint: 'POST /api/v1/product-params/search',
+      request: {product_line:'network-switch', keywords:['交换容量','包转发率','MAC','ARP','VLAN'], category:'performance'},
+      response: {matched:5, total:5, source_version:'v3.2', elapsed_ms:145},
+    },
+    {
+      endpoint: 'POST /api/v1/product-params/detail',
+      request: {product_line:'network-switch', param_ids:['sw-mac-cap','sw-arp-cap','sw-vlan-cap']},
+      response: {records:3, source:'产品参数库 v3.2', elapsed_ms:67},
+    },
+  ],
+  score: [
+    {
+      endpoint: 'POST /api/v1/product-params/search',
+      request: {product_line:'network-switch', keywords:['交换容量','包转发率','槽位','MAC','ARP'], category:'scoring'},
+      response: {matched:5, total:5, source_version:'v3.2', elapsed_ms:130},
+    },
+    {
+      endpoint: 'POST /api/v1/product-params/detail',
+      request: {product_line:'network-switch', param_ids:['hw-slot-count']},
+      response: {records:1, source:'硬件规格表 v2.1', elapsed_ms:55},
+    },
+  ],
+};
+
+function startAnalysis() {
+  const data = mockData[currentMode] || mockData.full;
+  const apiLogs = kbAPIResponses[currentMode] || kbAPIResponses.full;
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('progress').classList.remove('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('apiLog').innerHTML = '';
+
+  document.getElementById('stepIndicator').innerHTML = steps.map((s,i) =>
+    `<span class="step-dot" id="step${i}"></span>`
+  ).join('');
+
+  const apiEl = document.getElementById('apiLog');
+  let i = 0;
+  let apiIdx = 0;
+
+  function appendLog(cls, text) {
+    apiEl.innerHTML += text + '\n';
+    apiEl.scrollTop = apiEl.scrollHeight;
+  }
+
+  document.getElementById('step0').classList.add('active');
+  document.getElementById('progressText').textContent = steps[0].name + '...';
+  appendLog('info', '<span class="info">-- 开始分析 --</span>');
+
+  const timer = setInterval(() => {
+    if (i < steps.length) {
+      const prev = document.getElementById('step'+(i-1));
+      const cur = document.getElementById('step'+i);
+      if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+      if (cur) cur.classList.add('active');
+      document.getElementById('progressFill').style.width = ((i+1) / steps.length * 100) + '%';
+      document.getElementById('progressText').textContent = steps[i].name + '...';
+
+      if (steps[i].api && apiIdx < apiLogs.length) {
+        const api = apiLogs[apiIdx];
+        appendLog('req', '<span class="req">> ' + api.endpoint + '</span>');
+        appendLog('info', '<span class="info">  Request: ' + JSON.stringify(api.request).substring(0,100) + '...</span>');
+        setTimeout(() => {
+          appendLog('resp', '<span class="resp">< 200 OK</span>');
+          appendLog('resp', '<span class="resp">  matched=' + api.response.matched + ', source=' + api.response.source + ' (' + api.response.elapsed_ms + 'ms)</span>');
+        }, 200);
+        apiIdx++;
+      } else {
+        appendLog('info', '<span class="info">  ' + steps[i].name + '完成</span>');
+      }
+      i++;
+    } else {
+      clearInterval(timer);
+      const prev = document.getElementById('step'+(i-1));
+      if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+      document.getElementById('progressFill').style.width = '100%';
+      document.getElementById('progressText').textContent = '分析完成';
+      appendLog('resp', '<span class="resp">-- 全流程完成 --</span>');
+      setTimeout(() => {
+        document.getElementById('progress').classList.add('hidden');
+        renderResults(data, apiLogs);
+        document.getElementById('results').classList.remove('hidden');
+        document.getElementById('analyzeBtn').disabled = false;
+      }, 400);
+    }
+  }, 550);
+}
+
+function renderResults(data, apiLogs) {
+  let paramsHtml = data.params.map(p => `<tr>
+    <td>${p.name}${p.material?' <span class="badge star">实质</span>':''}</td>
+    <td>${p.value}</td><td>${p.unit}</td><td>${p.type}</td>
+    <td>${p.material?'<span class="badge star">是</span>':'<span class="badge pass">否</span>'}</td>
+  </tr>`).join('');
+  document.getElementById('paramsBody').innerHTML = paramsHtml;
+  document.getElementById('paramCount').textContent = data.params.length + ' 项';
+
+  let kbLogHtml = '';
+  for (const api of apiLogs) {
+    kbLogHtml += `<span class="req">> ${api.endpoint}</span>\n`;
+    kbLogHtml += `<span class="info">  Request: ${JSON.stringify(api.request).substring(0,140)}...</span>\n`;
+    kbLogHtml += `<span class="resp"><  200 OK  matched=${api.response.matched}  source=${api.response.source}  ${api.response.elapsed_ms}ms</span>\n`;
+  }
+  document.getElementById('kbLog').innerHTML = kbLogHtml;
+
+  let matchHtml = data.kbMatches.map(m => `<tr>
+    <td>${m.bid}</td>
+    <td><span class="tag"><span class="badge api">KB</span> ${m.product}</span></td>
+    <td><span class="badge ${parseInt(m.score)>=95?'pass':parseInt(m.score)>=80?'warn':'fail'}">${m.score}</span></td>
+    <td>${m.source}</td>
+  </tr>`).join('');
+  document.getElementById('kbMatchBody').innerHTML = matchHtml;
+  document.getElementById('kbMatchCount').textContent = data.kbMatches.length + ' 项已匹配';
+
+  let devHtml = data.deviations.map(d => `<tr>
+    <td>${d.param}</td><td>${d.req}</td><td>${d.resp}</td>
+    <td><span class="badge ${d.dev==='正偏离'?'pass':d.dev==='负偏离'?'fail':'warn'}">${d.dev}</span></td>
+    <td><span class="badge api">${d.source}</span></td>
+    <td><span class="sev sev-${d.risk}"></span>${d.risk==='low'?'低':d.risk==='mid'?'中':'高'}</td>
+  </tr>`).join('');
+  document.getElementById('deviationBody').innerHTML = devHtml;
+
+  let negCount = data.deviations.filter(d=>d.dev==='负偏离').length;
+  let statusLabel = negCount > 0
+    ? '<span class="badge fail">存在负偏离</span>'
+    : '<span class="badge pass">全部满足</span>';
+  document.getElementById('deviationStatus').innerHTML = statusLabel;
+
+  document.getElementById('scoreCard').innerHTML = `
+    <div class="metric"><div class="m-val blue">${data.totalScore}</div><div class="m-label">技术得分</div></div>
+    <div class="metric"><div class="m-val green">${data.scoreRate*100}%</div><div class="m-label">得分率</div></div>
+    <div class="metric"><div class="m-val amber">${data.risks.filter(r=>r.sev!=='low').length}</div><div class="m-label">中高关注项</div></div>
+    <div class="metric"><div class="m-val purple">${data.kbParamCount}</div><div class="m-label">知识库匹配参数</div></div>
+  `;
+
+  let scoreHtml = data.params.map((p,i) => {
+    let fullScore = 10 - Math.floor(i/3)*2;
+    let score = Math.min(Math.round(95 - i*4 + Math.random()*5), fullScore);
+    let sources = ['产品参数库 v3.2','硬件规格表 v2.1','特性清单 v1.5','产品参数库 v3.2'];
+    return `<tr>
+      <td>${p.name}评分</td><td>${Math.max(fullScore,6)}</td><td>${score}</td>
+      <td>${Math.round(score/fullScore*100)}%</td>
+      <td><span class="badge api">${sources[i%sources.length]}</span></td>
+      <td>${i<2?'超额满足，满分':i<4?'满足要求':'符合要求'}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('scoreBody').innerHTML = scoreHtml;
+
+  document.getElementById('decisionBox').className = 'decision-box ' + data.conclusionType;
+  document.getElementById('decisionConclusion').textContent = data.conclusion;
+  document.getElementById('decisionReason').textContent = data.reason;
+  document.getElementById('decisionKbParams').textContent = data.kbParamCount + ' 项';
+  document.getElementById('decisionApiCalls').textContent = data.apiCallCount + ' 次';
+
+  document.getElementById('riskList').innerHTML = data.risks.map(r => `
+    <div class="risk-item"><span class="sev sev-${r.sev}"></span>${r.text}</div>
+  `).join('');
+
+  document.getElementById('suggestionList').innerHTML = data.suggestions.map((s,i) => `
+    <div class="suggestion"><span class="s-idx">${i+1}.</span>${s}</div>
+  `).join('');
+}
+
+setKBStatus('on');
+document.getElementById('analyzeBtn').disabled = true;
+</script>
+</body>
+</html>
