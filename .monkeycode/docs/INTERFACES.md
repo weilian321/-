@@ -118,6 +118,27 @@
 
 ---
 
+## 存储模块
+
+### `storage/file_manager.py`
+
+| 方法 | 参数 | 返回 | 说明 |
+|------|------|------|------|
+| `save_uploaded_file(source_path, task_id, file_type)` | source_path: str, task_id: str, file_type: str | str | 保存上传文件到任务目录 |
+| `cleanup_expired_files(max_age_hours)` | max_age_hours: int | int | 清理超期文件，返回清理数量 |
+| `clear_task_files(task_id)` | task_id: str | bool | 清除指定任务临时文件 |
+
+### `storage/history_manager.py`
+
+| 方法 | 参数 | 返回 | 说明 |
+|------|------|------|------|
+| `save_task_snapshot(task_id, snapshot)` | task_id: str, snapshot: dict | bool | 保存任务上下文快照 |
+| `list_tasks(product_line, time_range)` | product_line: str, time_range: dict | list | 按产品线/时间检索历史任务 |
+| `load_task_context(task_id)` | task_id: str | dict | 从快照恢复任务上下文 |
+| `delete_task(task_id)` | task_id: str | bool | 删除任务及关联文件 |
+
+---
+
 ## 核心数据模型
 
 ### ParameterItem (招标参数)

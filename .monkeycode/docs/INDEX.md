@@ -24,10 +24,11 @@
 | 模块 | 描述 | README |
 |------|------|--------|
 | `config/` | 全局配置、产品线定义、评分模板 | [README](./模块/config.md) |
-| `parsers/` | 招标文件解析与结构化提取 | - |
-| `database/` | SQLite 数据模型与 CRUD | - |
-| `engine/` | 语义匹配、偏离判定、得分计算、决策推理 | - |
-| `reports/` | 偏离表与投标分析报告生成 | - |
+| `parsers/` | 招标文件解析与结构化提取 | [README](./模块/parsers.md) |
+| `database/` | SQLite 数据模型与 CRUD | [README](./模块/database.md) |
+| `engine/` | 语义匹配、偏离判定、得分计算、决策推理 | [README](./模块/engine.md) |
+| `reports/` | 偏离表与投标分析报告生成 | [README](./模块/reports.md) |
+| `storage/` | 文件临时存储与历史任务管理 | [README](./模块/storage.md) |
 | `storage/` | 文件临时存储与历史任务管理 | - |
 
 ---
