@@ -127,7 +127,7 @@
 
 ## Phase 2: Agent 核心中枢层实施
 
-- [ ] 22. 创建 Agent 核心模块目录与接口定义
+- [x] 22. 创建 Agent 核心模块目录与接口定义
    - 在 `bid-param-analyzer/agent/` 下创建 `__init__.py`、`planner.py`、`scheduler.py`、`memory.py`、`exception_handler.py`、`self_validator.py`
    - 定义各模块的公开接口签名（参考设计文档 Components 2-6 接口表格）
    - 定义工具注册规范：每个工具需提供 `name`、`handler`、`signature`（参考 REQ-11.1）
